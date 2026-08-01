@@ -127,6 +127,15 @@
     background:#c0392b33;border:2px solid #ff6b5b66;display:none;pointer-events:auto;
     align-items:center;justify-content:center;font-size:34px;user-select:none;}
   #fireBtn.active{background:#c0392b66;border-color:#ff6b5b;}
+  #kickBtn{position:absolute;bottom:96px;right:126px;width:62px;height:62px;border-radius:50%;
+    background:#ffb70333;border:2px solid #ffb70366;display:none;pointer-events:auto;
+    align-items:center;justify-content:center;font-size:26px;user-select:none;overflow:hidden;}
+  #kickBtn.ready{box-shadow:0 0 10px #ffb703aa;}
+  #kickBtn .kickCd{position:absolute;left:0;right:0;bottom:0;background:#0009;height:0%;pointer-events:none;}
+  #kickHint{position:absolute;bottom:172px;right:112px;font-size:10px;color:#ffb703cc;background:#0006;padding:2px 6px;border-radius:6px;pointer-events:none;display:none;}
+
+  #minimap{position:absolute;top:112px;right:10px;width:140px;height:140px;border-radius:10px;
+    background:#0009;border:2px solid #ffffff2e;pointer-events:none;}
 
   #fpsWrap{position:absolute;bottom:4px;left:4px;font-size:10px;color:#555;}
 </style>
@@ -151,6 +160,8 @@
 
   <div id="bossBarWrap"><div id="bossName">BOSS</div><div id="bossBarOuter"><div id="bossBarInner"></div></div></div>
 
+  <canvas id="minimap" width="140" height="140"></canvas>
+
   <div id="toastWrap"></div>
 
   <div id="levelBadge">1</div>
@@ -158,6 +169,8 @@
 
   <div id="joystick" class="clickable"><div id="joystickStick"></div></div>
   <div id="fireBtn" class="clickable">🎯</div>
+  <div id="kickBtn" class="clickable">🦵<div class="kickCd"></div></div>
+  <div id="kickHint">SPAZIO: calcio</div>
 
   <!-- Start screen -->
   <div id="startScreen" class="screen">
@@ -340,6 +353,7 @@ const AudioSys = (function(){
     gadget(){ [700,900,1200].forEach((f,i)=>setTimeout(()=>tone(f,0.08,'sine',{gain:0.14}),i*40)); },
     levelUp(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.16,'triangle',{gain:0.2}),i*70)); },
     evolve(){ [400,600,900,1300,1700].forEach((f,i)=>setTimeout(()=>tone(f,0.14,'sawtooth',{gain:0.15}),i*55)); },
+    kick(){ noiseBurst(0.14,{filterType:'lowpass',filterFreq:900,gain:0.32}); tone(100,0.18,'square',{slideTo:40,gain:0.22}); },
     bossWarning(){ tone(120,0.9,'sawtooth',{slideTo:90,gain:0.2}); },
     bossDefeat(){ [392,523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.22,'triangle',{gain:0.22}),i*110)); },
     click(){ tone(420,0.05,'square',{slideTo:600,gain:0.13}); },
@@ -385,6 +399,8 @@ const AudioSys = (function(){
 /* ---------------------------- Canvas / Camera ---------------------------- */
 const canvas=document.getElementById('game');
 const ctx=canvas.getContext('2d');
+const mmCanvas=document.getElementById('minimap');
+const mmCtx=mmCanvas.getContext('2d');
 let VW=0,VH=0;
 function resize(){VW=canvas.width=window.innerWidth;VH=canvas.height=window.innerHeight;}
 window.addEventListener('resize',resize);
@@ -674,7 +690,7 @@ const BOSSES = [
   {id:'pm',name:"Il Project Manager",icon:"📢",hp:840,spd:90,dmg:14,xp:160,pattern:'pm'},
   {id:'ceo',name:"Il CEO",icon:"👑",hp:1400,spd:95,dmg:20,xp:260,pattern:'ceo'},
 ];
-const BOSS_INTERVAL = 300; // seconds between boss waves (~5 minutes)
+const BOSS_INTERVAL = 260; // seconds between boss waves, shrinks each loop to track the faster pace
 
 /* ---------------------------- Character Data ---------------------------- */
 const CHARACTERS = {
@@ -733,6 +749,7 @@ let lastTime=performance.now();
 window.addEventListener('keydown',e=>{
   input.keys[e.code]=true;
   if(e.code==='Escape'){ togglePause(); }
+  if(e.code==='Space'){ e.preventDefault(); tryEmergencyKick(); }
 });
 window.addEventListener('keyup',e=>{ input.keys[e.code]=false; });
 
@@ -798,6 +815,12 @@ if(isTouchDevice()){
   fireBtn.addEventListener('touchstart',fireOn,{passive:false});
   fireBtn.addEventListener('touchend',fireOff,{passive:true});
   fireBtn.addEventListener('touchcancel',fireOff,{passive:true});
+
+  const kickBtn=document.getElementById('kickBtn');
+  kickBtn.style.display='flex';
+  kickBtn.addEventListener('touchstart',(e)=>{ e.preventDefault(); tryEmergencyKick(); },{passive:false});
+} else {
+  document.getElementById('kickHint').style.display='block';
 }
 
 /* ---------------------------- Entity factories ---------------------------- */
@@ -817,6 +840,8 @@ function makePlayer(charId){
     weapons:[], // {id, level}
     orbiters:[], // computed each frame
     passiveTimer:0,
+    kickCooldown:0,
+    teamPauseKills:0, seniorKills:0, seniorArmed:false,
   };
   if(c){
     player.stats.maxHp = Math.round(100*c.mult.hp);
@@ -946,7 +971,7 @@ function progress(){
   return game.time + game.player.level*12;
 }
 function difficultyMult(){
-  return 1 + progress()/40;
+  return 1 + progress()/34;
 }
 function spawnEnemy(typeId, x, y){
   const d=ENEMIES[typeId];
@@ -955,7 +980,7 @@ function spawnEnemy(typeId, x, y){
   const e={
     type:d, x, y, r:15,
     hp: (18*d.hp)*dm, maxHp:(18*d.hp)*dm,
-    spd: d.spd*Math.min(230, 58+pr*0.6),
+    spd: d.spd*Math.min(250, 58+pr*0.75),
     dmg: (6*d.dmg)*(1+pr/130),
     xp: d.xp,
     behavior:d.behavior,
@@ -975,9 +1000,13 @@ function updateSpawning(dt){
   if(game.boss) return; // no normal spawns during boss fight
   game.spawnTimer-=dt;
   const pr=progress();
-  const maxAlive=Math.min(180, 35+pr*0.6);
+  // pace also quickens with actual kill count (an active player fighting hard
+  // gets a faster tempo, not just one driven by the clock), mirroring the
+  // reference game's score-driven spawn acceleration
+  const kb=Math.min(70,game.kills*0.6);
+  const maxAlive=Math.min(200, 35+pr*0.7+kb*0.8);
   if(game.spawnTimer<=0 && game.enemies.length<maxAlive){
-    const batch=1+Math.floor(pr/35);
+    const batch=1+Math.floor((pr+kb)/30);
     for(let i=0;i<batch;i++){
       const pos=randEdgePos();
       // variant specials rarer
@@ -986,7 +1015,7 @@ function updateSpawning(dt){
       const t = useSpecial? pick(specials) : pick(ENEMY_IDS.filter(id=>!specials.includes(id)));
       spawnEnemy(t,pos.x,pos.y);
     }
-    game.spawnTimer = Math.max(0.35, 1.15-pr/280);
+    game.spawnTimer = Math.max(0.26, 1.1-(pr+kb)/220);
   }
   // gadget pickups periodically
   game.gadgetTimer-=dt;
@@ -1048,7 +1077,9 @@ function endBoss(boss){
   showToast('✅ '+boss.data.name+' sconfitto/a! +Vita, +EXP', '#2ecc71');
   game.boss=null;
   document.getElementById('bossBarWrap').style.display='none';
-  game.nextBossTime += BOSS_INTERVAL;
+  // interval shrinks with each boss cleared, so boss cadence keeps pace with
+  // the game's own accelerating spawn/difficulty curve instead of staying fixed
+  game.nextBossTime += Math.max(150, BOSS_INTERVAL - game.bossIndex*14);
   game.bossIndex++;
   if(game.bossIndex % BOSSES.length===0) game.bossLoop++;
   // drop a guaranteed chest
@@ -1080,8 +1111,26 @@ function updatePlayer(dt){
 
   updatePassive(p,dt);
 
+  if(p.kickCooldown>0){
+    p.kickCooldown=Math.max(0,p.kickCooldown-dt);
+    updateKickHUD(p);
+  } else if(kickBtnEl && kickBtnEl.classList && !kickBtnEl.classList.contains('ready')){
+    updateKickHUD(p);
+  }
+
+  checkSeniorTrigger(p);
+
   // reset per-frame slow accumulation flag (re-applied by auras each frame)
   p._slowedThisFrame=false;
+}
+
+const kickBtnEl=document.getElementById('kickBtn');
+const kickCdEl=kickBtnEl? kickBtnEl.querySelector('.kickCd') : null;
+function updateKickHUD(p){
+  if(!kickBtnEl) return;
+  const pct=Math.max(0,Math.min(1,p.kickCooldown/KICK_COOLDOWN));
+  if(kickCdEl) kickCdEl.style.height=(pct*100)+'%';
+  kickBtnEl.classList.toggle('ready', pct<=0);
 }
 
 function updatePassive(p,dt){
@@ -1312,6 +1361,25 @@ function allTargets(){
   return game.boss? [...game.enemies, game.boss] : game.enemies;
 }
 
+/* ---------------------------- Emergency kick ---------------------------- */
+const KICK_COOLDOWN=7, KICK_RADIUS=140, KICK_DMG=24, KICK_KNOCKBACK=420;
+function tryEmergencyKick(){
+  if(!running || paused || levelUpOpen || !game) return;
+  const p=game.player;
+  if(p.kickCooldown>0) return;
+  p.kickCooldown=KICK_COOLDOWN;
+  game.screenShake=12;
+  AudioSys.sfx.kick();
+  game.particles.push({kind:'boom',x:p.x,y:p.y,r:KICK_RADIUS,life:0.35,age:0});
+  const dmg=KICK_DMG*p.stats.damageMult;
+  for(const e of allTargets()){
+    if(dist(p.x,p.y,e.x,e.y)<=KICK_RADIUS){
+      dealDamage(e,dmg,{knockback:KICK_KNOCKBACK,stun:0.45});
+    }
+  }
+  showToast('🦵 Calcio d\'emergenza!','#ffb703');
+}
+
 function doProjectile(wd,dmg,w){
   const p=game.player;
   const count=effCount(wd,w.level);
@@ -1461,6 +1529,55 @@ function updateClones(dt){
   }
 }
 
+/* ---------------------------- Kill-streak events ---------------------------- */
+const TEAM_PAUSE_KILLS=40, SENIOR_KILLS=70, SENIOR_HP_THRESHOLD=0.32;
+function triggerKillStreaks(){
+  const p=game.player;
+  p.teamPauseKills=(p.teamPauseKills||0)+1;
+  p.seniorKills=(p.seniorKills||0)+1;
+  if(p.teamPauseKills>=TEAM_PAUSE_KILLS){
+    p.teamPauseKills=0;
+    spawnTeamPause();
+  }
+  if(p.seniorKills>=SENIOR_KILLS && !p.seniorArmed){
+    p.seniorKills=0;
+    p.seniorArmed=true;
+    showToast('🎖️ Collega Senior pronto: intervento automatico sotto il 32% HP!','#4cc9f0');
+  }
+}
+function spawnTeamPause(){
+  const p=game.player;
+  const n=2+Math.floor(Math.random()*3); // 2-4 allies
+  for(let i=0;i<n;i++){
+    const ang=(TAU/n)*i;
+    game.clones.push({
+      x:clamp(p.x+Math.cos(ang)*50,20,WORLD-20), y:clamp(p.y+Math.sin(ang)*50,20,WORLD-20),
+      life:rand(6,8), age:0, fireTimer:0, dmg:10*p.stats.damageMult, fireRate:400, icon:'🧑‍💼',
+    });
+  }
+  game.screenShake=6;
+  AudioSys.sfx.summon();
+  showToast('👥 Pausa Squadra! Colleghi in tuo aiuto!','#7fd858');
+}
+function checkSeniorTrigger(p){
+  if(!p.seniorArmed || p.hp<=0) return;
+  if(p.hp>p.stats.maxHp*SENIOR_HP_THRESHOLD) return;
+  p.seniorArmed=false;
+  const healAmt=p.stats.maxHp*0.45;
+  p.hp=Math.min(p.stats.maxHp,p.hp+healAmt);
+  p.buffs.invuln={until:game.time+1.8};
+  const dmg=40*p.stats.damageMult;
+  game.screenShake=14;
+  game.particles.push({kind:'boom',x:p.x,y:p.y,r:220,life:0.45,age:0});
+  AudioSys.sfx.evolve();
+  for(const e of allTargets()){
+    if(dist(p.x,p.y,e.x,e.y)<=220){
+      dealDamage(e,dmg,{knockback:380,stun:0.6});
+    }
+  }
+  showToast('🎖️ Collega Senior interviene: cura d\'emergenza + colpo devastante!','#4cc9f0');
+}
+
 /* ---------------------------- Damage application ---------------------------- */
 function dealDamage(e, amount, opts){
   opts=opts||{};
@@ -1494,6 +1611,7 @@ function onEnemyDeath(e){
   AudioSys.sfx.kill();
   game.kills++;
   addXP(e.xp*2.2);
+  triggerKillStreaks();
   // explode on death behavior
   if(e.behavior==='explode'){
     const p=game.player;
@@ -1973,6 +2091,63 @@ function render(){
 
   ctx.restore();
   drawWeaponIndicators();
+  drawBossIndicator();
+  drawMinimap();
+}
+function drawBossIndicator(){
+  const boss=game.boss;
+  if(!boss || inView(boss.x,boss.y,60)) return;
+  const p=game.player;
+  const ang=angleTo(p.x,p.y,boss.x,boss.y);
+  const dx=Math.cos(ang), dy=Math.sin(ang);
+  const margin=44, cx=VW/2, cy=VH/2;
+  const sx = dx!==0 ? (cx-margin)/Math.abs(dx) : Infinity;
+  const sy = dy!==0 ? (cy-margin)/Math.abs(dy) : Infinity;
+  const s=Math.min(sx,sy);
+  const ix=cx+dx*s, iy=cy+dy*s;
+  ctx.save();
+  ctx.translate(ix,iy);
+  ctx.rotate(ang);
+  ctx.fillStyle='#ff3b3b';
+  ctx.shadowColor='#ff3b3b'; ctx.shadowBlur=9;
+  ctx.beginPath();
+  ctx.moveTo(16,0); ctx.lineTo(-9,-10); ctx.lineTo(-9,10); ctx.closePath(); ctx.fill();
+  ctx.restore();
+  ctx.save();
+  ctx.font='bold 11px Arial'; ctx.fillStyle='#ff3b3b'; ctx.textAlign='center';
+  ctx.fillText('BOSS', ix-dx*26, iy-dy*26);
+  ctx.restore();
+}
+function drawMinimap(){
+  const p=game.player;
+  mmCtx.clearRect(0,0,mmCanvas.width,mmCanvas.height);
+  const scale=mmCanvas.width/WORLD;
+  mmCtx.fillStyle='#1a1815';
+  mmCtx.fillRect(0,0,mmCanvas.width,mmCanvas.height);
+  // weapon pickups
+  mmCtx.fillStyle='#ffd23f';
+  for(const pk of game.pickups){
+    if(pk.kind!=='weapon') continue;
+    mmCtx.fillRect(pk.x*scale-1.5,pk.y*scale-1.5,3,3);
+  }
+  // enemies
+  mmCtx.fillStyle='#e05a4e';
+  for(const e of game.enemies){
+    mmCtx.fillRect(e.x*scale-1,e.y*scale-1,2,2);
+  }
+  // boss
+  if(game.boss){
+    mmCtx.fillStyle='#ff3b3b';
+    mmCtx.beginPath(); mmCtx.arc(game.boss.x*scale,game.boss.y*scale,4,0,TAU); mmCtx.fill();
+  }
+  // player
+  mmCtx.fillStyle='#4cc9f0';
+  mmCtx.beginPath(); mmCtx.arc(p.x*scale,p.y*scale,4,0,TAU); mmCtx.fill();
+  mmCtx.strokeStyle='#4cc9f0aa'; mmCtx.lineWidth=1.5;
+  mmCtx.beginPath(); mmCtx.arc(p.x*scale,p.y*scale,7,0,TAU); mmCtx.stroke();
+  // viewport rectangle
+  mmCtx.strokeStyle='#ffffff55'; mmCtx.lineWidth=1;
+  mmCtx.strokeRect((p.x-VW/2)*scale,(p.y-VH/2)*scale,VW*scale,VH*scale);
 }
 function drawWeaponIndicators(){
   const p=game.player;
