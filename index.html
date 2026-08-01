@@ -832,7 +832,7 @@ function makePlayer(charId){
     invuln:0,
     character:charId,
     stats:{
-      maxHp:100, moveSpeed:225, damageMult:1, cooldownMult:1, areaMult:1,
+      maxHp:100, moveSpeed:265, damageMult:1, cooldownMult:1, areaMult:1,
       pickupRadius:90, armor:0, regen:0, luck:0, xpMult:1, extraProjectiles:0,
     },
     tempSlowUntil:0, tempSlowFactor:1,
@@ -845,7 +845,7 @@ function makePlayer(charId){
   };
   if(c){
     player.stats.maxHp = Math.round(100*c.mult.hp);
-    player.stats.moveSpeed = Math.round(225*c.mult.spd);
+    player.stats.moveSpeed = Math.round(265*c.mult.spd);
     player.stats.damageMult = c.mult.dmg;
     player.stats.areaMult = c.mult.area;
     player.hp = player.stats.maxHp;
@@ -887,7 +887,7 @@ function initGame(charId){
   game={
     player, time:0, wave:1, kills:0,
     enemies:[], projectiles:[], enemyProjectiles:[], pickups:[], particles:[], floaters:[], clones:[],
-    spawnTimer:0, gadgetTimer:rand(14,20), weaponSpawnTimer:rand(6,10),
+    spawnTimer:0, gadgetTimer:rand(14,20), weaponSpawnTimer:rand(4,7),
     boss:null, nextBossTime:BOSS_INTERVAL, bossIndex:0, bossLoop:0,
     camX:player.x, camY:player.y,
     screenShake:0,
@@ -980,7 +980,7 @@ function spawnEnemy(typeId, x, y){
   const e={
     type:d, x, y, r:15,
     hp: (18*d.hp)*dm, maxHp:(18*d.hp)*dm,
-    spd: d.spd*Math.min(250, 58+pr*0.75),
+    spd: d.spd*Math.min(272, 66+pr*0.8),
     dmg: (6*d.dmg)*(1+pr/130),
     xp: d.xp,
     behavior:d.behavior,
@@ -1003,10 +1003,10 @@ function updateSpawning(dt){
   // pace also quickens with actual kill count (an active player fighting hard
   // gets a faster tempo, not just one driven by the clock), mirroring the
   // reference game's score-driven spawn acceleration
-  const kb=Math.min(70,game.kills*0.6);
-  const maxAlive=Math.min(200, 35+pr*0.7+kb*0.8);
+  const kb=Math.min(80,game.kills*0.65);
+  const maxAlive=Math.min(220, 40+pr*0.75+kb*0.85);
   if(game.spawnTimer<=0 && game.enemies.length<maxAlive){
-    const batch=1+Math.floor((pr+kb)/30);
+    const batch=1+Math.floor((pr+kb)/26);
     for(let i=0;i<batch;i++){
       const pos=randEdgePos();
       // variant specials rarer
@@ -1015,7 +1015,7 @@ function updateSpawning(dt){
       const t = useSpecial? pick(specials) : pick(ENEMY_IDS.filter(id=>!specials.includes(id)));
       spawnEnemy(t,pos.x,pos.y);
     }
-    game.spawnTimer = Math.max(0.26, 1.1-(pr+kb)/220);
+    game.spawnTimer = Math.max(0.2, 1.0-(pr+kb)/220);
   }
   // gadget pickups periodically
   game.gadgetTimer-=dt;
@@ -1027,14 +1027,14 @@ function updateSpawning(dt){
   game.weaponSpawnTimer-=dt;
   if(game.weaponSpawnTimer<=0){
     spawnFloorWeapon();
-    game.weaponSpawnTimer=rand(11,17);
+    game.weaponSpawnTimer=rand(6,9);
   }
 }
 
 function spawnFloorWeapon(){
   const p=game.player;
   const ang=rand(0,TAU);
-  const d=rand(220,850);
+  const d=rand(140,500); // kept close to the player so it's actually reachable/visible
   const x=clamp(p.x+Math.cos(ang)*d,40,WORLD-40);
   const y=clamp(p.y+Math.sin(ang)*d,40,WORLD-40);
   game.pickups.push({kind:'weapon',weaponId:pickLootWeaponId(game.player.stats.luck||0),x,y,r:13,bob:0});
@@ -1620,15 +1620,15 @@ function onEnemyDeath(e){
   }
   // drops
   const r=Math.random();
-  if(r<0.50){
+  if(r<0.42){
     game.pickups.push({kind:'xp',x:e.x,y:e.y,r:7,val:e.xp,bob:0});
-  } else if(r<0.58){
+  } else if(r<0.50){
     game.pickups.push({kind:'heart',x:e.x,y:e.y,r:9,bob:0});
-  } else if(r<0.68){
+  } else if(r<0.72){
     game.pickups.push({kind:'weapon',weaponId:pickLootWeaponId(game.player.stats.luck),x:e.x,y:e.y,r:13,bob:0});
-  } else if(r<0.82){
+  } else if(r<0.85){
     game.pickups.push({kind:'ammo',x:e.x,y:e.y,r:10,bob:0});
-  } else if(r<0.87){
+  } else if(r<0.90){
     game.pickups.push({kind:'gadget',gadgetId:pick(Object.keys(GADGETS)),x:e.x,y:e.y,r:12,bob:0});
   }
   game.particles.push({kind:'poof',x:e.x,y:e.y,life:0.25,age:0});
