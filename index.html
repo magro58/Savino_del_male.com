@@ -832,7 +832,7 @@ function makePlayer(charId){
     invuln:0,
     character:charId,
     stats:{
-      maxHp:100, moveSpeed:265, damageMult:1, cooldownMult:1, areaMult:1,
+      maxHp:100, moveSpeed:340, damageMult:1, cooldownMult:1, areaMult:1,
       pickupRadius:90, armor:0, regen:0, luck:0, xpMult:1, extraProjectiles:0,
     },
     tempSlowUntil:0, tempSlowFactor:1,
@@ -845,7 +845,7 @@ function makePlayer(charId){
   };
   if(c){
     player.stats.maxHp = Math.round(100*c.mult.hp);
-    player.stats.moveSpeed = Math.round(265*c.mult.spd);
+    player.stats.moveSpeed = Math.round(340*c.mult.spd);
     player.stats.damageMult = c.mult.dmg;
     player.stats.areaMult = c.mult.area;
     player.hp = player.stats.maxHp;
