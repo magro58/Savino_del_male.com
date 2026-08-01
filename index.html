@@ -71,6 +71,25 @@
   .card .desc{font-size:11px;color:#aaa;margin-top:4px;min-height:44px;}
   .card .rarity{font-size:10px;font-weight:bold;margin-top:6px;text-transform:uppercase;letter-spacing:1px;}
 
+  /* character select */
+  #charGrid{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:1240px;margin:16px auto;}
+  .charCard{width:200px;background:#161616;border:2px solid #3a3a3a;border-radius:12px;overflow:hidden;cursor:pointer;text-align:left;transition:transform .12s,box-shadow .12s;}
+  .charCard:hover{transform:translateY(-4px);}
+  .charCard.selected{box-shadow:0 0 0 3px #fff, 0 6px 18px #0008;transform:translateY(-4px);}
+  .charCard .chHead{padding:10px 12px 6px;}
+  .charCard .chName{font-weight:bold;font-size:15px;}
+  .charCard .chSub{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.5px;}
+  .charCard .chPortrait{font-size:46px;text-align:center;padding:8px 0;background:#0000002a;}
+  .charCard .chDesc{font-size:11px;color:#bbb;padding:8px 12px;line-height:1.4;min-height:56px;}
+  .charCard .statRow{display:flex;align-items:center;gap:6px;padding:2px 12px;font-size:10px;color:#ccc;}
+  .charCard .statRow .segs{display:flex;gap:2px;flex:1;}
+  .charCard .statRow .seg{flex:1;height:6px;border-radius:2px;background:#333;}
+  .charCard .statRow .seg.on{background:currentColor;}
+  .charCard .box{margin:8px 10px;background:#0000003a;border:1px solid #ffffff1a;border-radius:8px;padding:6px 8px;}
+  .charCard .boxTitle{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#999;margin-bottom:3px;}
+  .charCard .boxMain{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:bold;}
+  .charCard .boxDesc{font-size:10px;color:#aaa;margin-top:2px;line-height:1.3;}
+
   #gameOverScreen h1.title{color:#888;}
   #statsBox{background:#1b1b1bcc;border:1px solid var(--border);border-radius:10px;padding:16px 26px;margin-top:10px;min-width:240px;}
   #statsBox div{display:flex;justify-content:space-between;gap:30px;font-size:14px;padding:3px 0;border-bottom:1px dashed #333;}
@@ -120,6 +139,13 @@
     Raccogli armi d'ufficio, sali di livello e sopravvivi alle ondate. Ogni 5 livelli un Manager verrà a chiedere il resoconto del progetto... di persona.</p>
     <button class="bigBtn clickable" id="startBtn">INIZIA IL TURNO</button>
     <div class="smallHint">Muoviti con WASD / Frecce (o il joystick su mobile) — le armi attaccano da sole — ESC per la pausa</div>
+  </div>
+
+  <!-- Character select screen -->
+  <div id="characterScreen" class="screen hidden" style="justify-content:flex-start;overflow-y:auto;padding-top:26px;">
+    <h1 class="title" style="font-size:min(6vw,36px);">SCEGLI IL TUO IMPIEGATO</h1>
+    <div id="charGrid"></div>
+    <button class="bigBtn clickable" id="confirmCharBtn" disabled style="opacity:0.4;margin-bottom:30px;">CONFERMA SCELTA</button>
   </div>
 
   <!-- Level up screen -->
@@ -258,6 +284,12 @@ const WEAPONS = {
   tape_infinite:{name:"Boomerang infinito",icon:"➿",iconKey:'tape',rarity:'legendary',archetype:'boomerang',dmg:20,cd:500,speed:520,range:380,pierce:99,evolved:true},
   glue_lockdown:{name:"Lancia-colla che immobilizza tutti",icon:"🧴",iconKey:'glue',rarity:'legendary',archetype:'aura',dmg:6,cd:900,radius:160,slow:0.95,slowDur:2.4,evolved:true},
   cyber_cannon:{name:"Cyber Cannon",icon:"💻",iconKey:'laptop',rarity:'legendary',archetype:'projectile',dmg:20,cd:130,count:1,speed:520,pierce:99,width:90,evolved:true},
+
+  // ---------- ARMI INIZIALI PERSONAGGI ----------
+  usb:{name:"Penna USB",icon:"💽",rarity:'common',archetype:'projectile',dmg:7,cd:520,count:1,speed:460,pierce:1,bounces:4},
+  megaphone:{name:"Megafono",icon:"📢",rarity:'common',archetype:'aura',dmg:4,cd:700,radius:130,cone:140,knockback:300},
+  mop_boosted:{name:"Mocio Potenziato",icon:"🧽",rarity:'common',archetype:'aura',dmg:8,cd:550,radius:95,cone:110},
+  briefcase:{name:"Valigetta del CEO",icon:"💼",rarity:'common',archetype:'projectile',dmg:14,cd:900,count:1,speed:380,pierce:1,explodeRadius:85},
 };
 // backfill defaults
 for(const id in WEAPONS){
@@ -406,6 +438,53 @@ const BOSSES = [
   {id:'ceo',name:"Il CEO",icon:"👑",hp:1400,spd:95,dmg:20,xp:260,pattern:'ceo'},
 ];
 
+/* ---------------------------- Character Data ---------------------------- */
+const CHARACTERS = {
+  analista:{
+    name:"L'Analista", subtitle:"Specialista dei dati", color:'#3498db', portrait:'🧑‍💻',
+    desc:"Ama i numeri e l'efficienza. Raccoglie dati per potenziare se stesso e i colleghi.",
+    bars:{hp:3,spd:5,dmg:2,area:4}, mult:{hp:0.85,spd:1.15,dmg:0.85,area:1.05},
+    weapon:'calc', weaponName:'Calcolatrice', weaponDesc:'Spara proiettili numerici.', weaponIcon:'🧮',
+    passiveId:'analista', passiveName:'Mente Analitica', passiveIcon:'🧠', passiveDesc:"Ogni 5 livelli, aumenta dell'1% il danno.",
+  },
+  assistente:{
+    name:"L'Assistente", subtitle:"Organizzata e veloce", color:'#2ecc71', portrait:'👩‍💼',
+    desc:"Sempre in movimento, supporta il team con velocità e precisione.",
+    bars:{hp:3,spd:5,dmg:2,area:2}, mult:{hp:0.85,spd:1.15,dmg:0.85,area:0.85},
+    weapon:'stapler', weaponName:'Sparagraffette', weaponDesc:'Spara raffiche di graffette.', weaponIcon:'📎',
+    passiveId:'assistente', passiveName:'Multitasking', passiveIcon:'🏃', passiveDesc:"Aumenta del 5% la velocità di ricarica delle armi.",
+  },
+  informatico:{
+    name:"L'Informatico", subtitle:"Genio della tecnologia", color:'#e6b800', portrait:'🧑‍💻',
+    desc:"Un hacker silenzioso che usa la tecnologia per dominare il caos.",
+    bars:{hp:4,spd:2,dmg:5,area:3}, mult:{hp:1.0,spd:0.85,dmg:1.15,area:0.95},
+    weapon:'usb', weaponName:'Penna USB', weaponDesc:'Lancia virus che rimbalzano tra i nemici.', weaponIcon:'💽',
+    passiveId:'informatico', passiveName:'Backup', passiveIcon:'🛡️', passiveDesc:"Ogni 30 secondi crea uno scudo temporaneo.",
+  },
+  commerciale:{
+    name:"Il Commerciale", subtitle:"Parla, vende, sopravvive", color:'#9b59b6', portrait:'🕴️',
+    desc:"Carismatico e spietato, trasforma ogni oggetto in un'opportunità.",
+    bars:{hp:3,spd:2,dmg:3,area:5}, mult:{hp:0.85,spd:0.85,dmg:1.0,area:1.2},
+    weapon:'megaphone', weaponName:'Megafono', weaponDesc:'Onda sonora che respinge i nemici.', weaponIcon:'📢',
+    passiveId:'commerciale', passiveName:'Parole che colpiscono', passiveIcon:'💬', passiveDesc:"Il critico ha il 10% di possibilità in più di stordire.",
+  },
+  pulizie:{
+    name:"L'Addetto alle Pulizie", subtitle:"Sottovalutato e letale", color:'#f1c40f', portrait:'🧹',
+    desc:"Nessuno lo nota. Nessuno sopravvive a lungo abbastanza per rimpiangerlo.",
+    bars:{hp:6,spd:2,dmg:4,area:3}, mult:{hp:1.3,spd:0.85,dmg:1.1,area:0.95},
+    weapon:'mop_boosted', weaponName:'Mocio Potenziato', weaponDesc:"Colpisce i nemici in un'area davanti a te.", weaponIcon:'🧽',
+    passiveId:'pulizie', passiveName:'Resistenza Sporca', passiveIcon:'♻️', passiveDesc:"Rigenera l'1% di salute ogni secondo.",
+  },
+  manager:{
+    name:"Il Manager", subtitle:"Nato per comandare", color:'#c0392b', portrait:'🧑‍💼',
+    desc:"Comanda, delega e usa ogni risorsa... compreso te come ultima opzione.",
+    bars:{hp:5,spd:2,dmg:5,area:4}, mult:{hp:1.15,spd:0.85,dmg:1.15,area:1.05},
+    weapon:'briefcase', weaponName:'Valigetta del CEO', weaponDesc:'Lancia documenti esplosivi.', weaponIcon:'💼',
+    passiveId:'manager', passiveName:'Delega Mortale', passiveIcon:'👤', passiveDesc:"Ogni 20 secondi evoca un assistente che attacca.",
+  },
+};
+let selectedCharacterId=null;
+
 /* ---------------------------- Global State ---------------------------- */
 const input={x:0,y:0,keys:{}};
 let game=null; // holds full run state
@@ -465,11 +544,13 @@ if(isTouchDevice()){
 }
 
 /* ---------------------------- Entity factories ---------------------------- */
-function makePlayer(){
-  return {
+function makePlayer(charId){
+  const c=CHARACTERS[charId];
+  const player={
     x:WORLD/2, y:WORLD/2, r:16, facing:0,
     hp:100, level:1, xp:0, xpNext:6, kills:0,
     invuln:0,
+    character:charId,
     stats:{
       maxHp:100, moveSpeed:200, damageMult:1, cooldownMult:1, areaMult:1,
       pickupRadius:90, armor:0, regen:0, luck:0, xpMult:1, extraProjectiles:0,
@@ -478,12 +559,25 @@ function makePlayer(){
     buffs:{}, // key -> {until, kind, val}
     weapons:[], // {id, level}
     orbiters:[], // computed each frame
+    passiveTimer:0,
   };
+  if(c){
+    player.stats.maxHp = Math.round(100*c.mult.hp);
+    player.stats.moveSpeed = Math.round(200*c.mult.spd);
+    player.stats.damageMult = c.mult.dmg;
+    player.stats.areaMult = c.mult.area;
+    player.hp = player.stats.maxHp;
+    if(c.passiveId==='assistente') player.stats.cooldownMult *= 0.95;
+    if(c.passiveId==='informatico') player.passiveTimer=30;
+    if(c.passiveId==='manager') player.passiveTimer=20;
+  }
+  return player;
 }
 
-function initGame(){
-  const player=makePlayer();
-  player.weapons.push({id:STARTER_WEAPONS[0],level:1});
+function initGame(charId){
+  const player=makePlayer(charId);
+  const c=CHARACTERS[charId];
+  player.weapons.push({id:(c?c.weapon:STARTER_WEAPONS[0]),level:1});
   game={
     player, time:0, wave:1, kills:0,
     enemies:[], projectiles:[], enemyProjectiles:[], pickups:[], particles:[], floaters:[], clones:[],
@@ -635,8 +729,34 @@ function updatePlayer(dt){
   if(p.stats.regen>0) p.hp=Math.min(p.stats.maxHp,p.hp+p.stats.regen*dt);
   if(p.invuln>0) p.invuln-=dt;
 
+  updatePassive(p,dt);
+
   // reset per-frame slow accumulation flag (re-applied by auras each frame)
   p._slowedThisFrame=false;
+}
+
+function updatePassive(p,dt){
+  const c=CHARACTERS[p.character];
+  if(!c) return;
+  if(c.passiveId==='pulizie'){
+    p.hp=Math.min(p.stats.maxHp,p.hp+p.stats.maxHp*0.01*dt);
+  } else if(c.passiveId==='informatico'){
+    p.passiveTimer-=dt;
+    if(p.passiveTimer<=0){
+      p.buffs.invuln={until:game.time+2.5};
+      showToast('🛡️ Backup attivato! Scudo temporaneo','#e6b800');
+      p.passiveTimer=30;
+    }
+  } else if(c.passiveId==='manager'){
+    p.passiveTimer-=dt;
+    if(p.passiveTimer<=0){
+      if(game.clones.length<3){
+        game.clones.push({x:p.x+rand(-30,30),y:p.y+rand(-30,30),life:8,age:0,fireTimer:0,dmg:8*p.stats.damageMult,fireRate:500,icon:'🧑‍💼'});
+        showToast('👤 Delega Mortale: assistente evocato!','#e6b800');
+      }
+      p.passiveTimer=20;
+    }
+  }
 }
 
 function applyDamageToPlayer(amount, sourceX, sourceY){
@@ -664,6 +784,10 @@ function addXP(amount){
   while(p.xp>=p.xpNext){
     p.xp-=p.xpNext;
     p.level++;
+    if(p.character==='analista' && p.level%5===0){
+      p.stats.damageMult*=1.01;
+      showToast('🧠 Mente Analitica: +1% danno','#3498db');
+    }
     p.xpNext=Math.round(6+p.level*4.2+Math.pow(p.level,1.35));
     openLevelUp();
   }
@@ -1008,6 +1132,9 @@ function dealDamage(e, amount, opts){
     e.y=clamp(e.y+Math.sin(a)*opts.knockback*0.06,10,WORLD-10);
   }
   if(opts.stun) e.stunUntil=game.time+opts.stun;
+  if(game.player.character==='commerciale' && Math.random()<0.10){
+    e.stunUntil=Math.max(e.stunUntil||0, game.time+0.4);
+  }
   if(e.hp<=0 && !e._dead){
     e._dead=true;
     onEnemyDeath(e);
@@ -1638,6 +1765,11 @@ document.getElementById('resumeBtn').onclick=()=>togglePause();
 
 function gameOver(){
   running=false;
+  paused=false;
+  levelUpOpen=false;
+  pendingLevelUps=0;
+  document.getElementById('levelUpScreen').classList.add('hidden');
+  document.getElementById('pauseScreen').classList.add('hidden');
   const statsBox=document.getElementById('statsBox');
   statsBox.innerHTML=`
     <div><span>Tempo sopravvissuto</span><span>${fmtTime(game.time)}</span></div>
@@ -1649,15 +1781,70 @@ function gameOver(){
   document.getElementById('gameOverScreen').classList.remove('hidden');
 }
 
+function buildCharGrid(){
+  const grid=document.getElementById('charGrid');
+  grid.innerHTML='';
+  for(const id in CHARACTERS){
+    const c=CHARACTERS[id];
+    const card=document.createElement('div');
+    card.className='charCard';
+    card.style.borderColor=c.color;
+    card.dataset.id=id;
+    const statRow=(label,val)=>{
+      let segs='';
+      for(let i=1;i<=8;i++) segs+=`<div class="seg ${i<=val?'on':''}"></div>`;
+      return `<div class="statRow" style="color:${c.color}"><span style="width:56px;color:#ccc;">${label}</span><div class="segs">${segs}</div></div>`;
+    };
+    card.innerHTML=`
+      <div class="chHead" style="border-bottom:2px solid ${c.color};">
+        <div class="chName" style="color:${c.color}">${c.name}</div>
+        <div class="chSub">${c.subtitle}</div>
+      </div>
+      <div class="chPortrait">${c.portrait}</div>
+      <div class="chDesc">${c.desc}</div>
+      ${statRow('SALUTE',c.bars.hp)}
+      ${statRow('VELOCITÀ',c.bars.spd)}
+      ${statRow('DANNO',c.bars.dmg)}
+      ${statRow('AREA',c.bars.area)}
+      <div class="box">
+        <div class="boxTitle" style="color:${c.color}">ARMA INIZIALE</div>
+        <div class="boxMain"><span>${hasIcon(WEAPONS[c.weapon].iconKey)?`<img src="${ICONS[WEAPONS[c.weapon].iconKey]}" style="width:22px;height:22px;border-radius:4px;vertical-align:middle;">`:c.weaponIcon}</span><span>${c.weaponName}</span></div>
+        <div class="boxDesc">${c.weaponDesc}</div>
+      </div>
+      <div class="box" style="margin-bottom:12px;">
+        <div class="boxTitle" style="color:${c.color}">ABILITÀ PASSIVA</div>
+        <div class="boxMain"><span>${c.passiveIcon}</span><span>${c.passiveName}</span></div>
+        <div class="boxDesc">${c.passiveDesc}</div>
+      </div>
+    `;
+    card.onclick=()=>{
+      document.querySelectorAll('.charCard').forEach(el=>el.classList.remove('selected'));
+      card.classList.add('selected');
+      selectedCharacterId=id;
+      const btn=document.getElementById('confirmCharBtn');
+      btn.disabled=false; btn.style.opacity=1;
+    };
+    grid.appendChild(card);
+  }
+}
+
 document.getElementById('startBtn').onclick=()=>{
   document.getElementById('startScreen').classList.add('hidden');
-  initGame();
+  buildCharGrid();
+  document.getElementById('characterScreen').classList.remove('hidden');
+};
+document.getElementById('confirmCharBtn').onclick=()=>{
+  if(!selectedCharacterId) return;
+  document.getElementById('characterScreen').classList.add('hidden');
+  levelUpOpen=false; pendingLevelUps=0;
+  document.getElementById('levelUpScreen').classList.add('hidden');
+  initGame(selectedCharacterId);
   running=true; paused=false;
 };
 document.getElementById('restartBtn').onclick=()=>{
   document.getElementById('gameOverScreen').classList.add('hidden');
-  initGame();
-  running=true; paused=false;
+  buildCharGrid();
+  document.getElementById('characterScreen').classList.remove('hidden');
 };
 
 // decorate start screen background with zombies
