@@ -411,13 +411,13 @@ const WEAPONS = {
   ruler:{name:"Righello in metallo",icon:"📏",rarity:'common',archetype:'melee',dmg:6,cd:420,range:65,arc:80,pierce:2},
   bat:{name:"Mazza da baseball",icon:"🏏",rarity:'uncommon',archetype:'melee',dmg:20,cd:950,range:80,arc:90,pierce:5,knockback:220},
   broom:{name:"Scopa",icon:"🧹",rarity:'common',archetype:'melee',dmg:8,cd:600,range:85,arc:100,pierce:4,knockback:120},
-  mop:{name:"Mocio",icon:"🧽",rarity:'common',archetype:'orbit',dmg:6,cd:2200,count:1,orbitRadius:75,rotSpeed:3.4},
-  umbrella:{name:"Ombrello",icon:"☂️",rarity:'uncommon',archetype:'orbit',dmg:5,cd:2600,count:2,orbitRadius:70,rotSpeed:2.6},
+  mop:{name:"Mocio",icon:"🧽",rarity:'common',archetype:'orbit',dmg:6,cd:2200,count:1,orbitRadius:75,rotSpeed:4.8},
+  umbrella:{name:"Ombrello",icon:"☂️",rarity:'uncommon',archetype:'orbit',dmg:5,cd:2600,count:2,orbitRadius:70,rotSpeed:3.8},
   chair:{name:"Sedia da ufficio",icon:"🪑",rarity:'uncommon',archetype:'melee',dmg:26,cd:1300,range:75,arc:80,pierce:5,knockback:280},
   keyboard:{name:"Tastiera usata come mazza",icon:"⌨️",rarity:'common',archetype:'melee',dmg:10,cd:560,range:70,arc:75,pierce:3,evolvesTo:'mech_keyboard'},
   crt:{name:"Monitor CRT",icon:"🖥️",rarity:'rare',archetype:'melee',dmg:42,cd:1900,range:85,arc:100,pierce:8,knockback:340},
-  extinguisher:{name:"Estintore",icon:"🧯",rarity:'uncommon',archetype:'aura',dmg:5,cd:500,radius:110,cone:110,slow:0.5,slowDur:1.2,evolvesTo:'cryo_cannon'},
-  vacuum:{name:"Tubo dell'aspirapolvere",icon:"🌀",rarity:'common',archetype:'aura',dmg:3,cd:450,radius:150,pull:true},
+  extinguisher:{name:"Estintore",icon:"🧯",rarity:'uncommon',archetype:'aura',dmg:5,cd:360,radius:110,cone:110,slow:0.5,slowDur:1.2,evolvesTo:'cryo_cannon'},
+  vacuum:{name:"Tubo dell'aspirapolvere",icon:"🌀",rarity:'common',archetype:'aura',dmg:3,cd:320,radius:150,pull:true},
   scissors:{name:"Forbici",icon:"✂️",rarity:'common',archetype:'melee',dmg:7,cd:480,range:65,arc:60,pierce:2},
   cucitrice:{name:"Cucitrice",icon:"📎",rarity:'common',archetype:'melee',dmg:9,cd:560,range:70,arc:65,pierce:3},
 
@@ -441,16 +441,16 @@ const WEAPONS = {
   mouse:{name:"Mouse con filo (frusta)",icon:"🖱️",rarity:'uncommon',archetype:'melee',dmg:11,cd:600,range:110,arc:40,pierce:4},
   numpad:{name:"Tastierino numerico",icon:"🔢",rarity:'common',archetype:'spread',dmg:4,cd:650,count:4,spreadDeg:50,speed:420,pierce:1},
   hdd:{name:"Hard disk esterno",icon:"💾",rarity:'uncommon',archetype:'projectile',dmg:12,cd:1000,count:1,speed:340,pierce:1,explodeRadius:80},
-  powerbank:{name:"Power bank",icon:"🔋",rarity:'uncommon',archetype:'aura',dmg:7,cd:1300,radius:130,pulse:true},
-  lamp:{name:"Lampada da scrivania",icon:"💡",rarity:'common',archetype:'aura',dmg:4,cd:400,radius:100,cone:70},
+  powerbank:{name:"Power bank",icon:"🔋",rarity:'uncommon',archetype:'aura',dmg:7,cd:950,radius:130,pulse:true},
+  lamp:{name:"Lampada da scrivania",icon:"💡",rarity:'common',archetype:'aura',dmg:4,cd:300,radius:100,cone:70},
 
   // ---------- RARE ----------
   katana_rare:{name:"Katana da collezione del direttore",icon:"⚔️",rarity:'rare',archetype:'melee',dmg:34,cd:800,range:100,arc:110,pierce:9,crit:0.3},
   trophy:{name:"Trofeo aziendale",icon:"🏆",rarity:'rare',archetype:'melee',dmg:38,cd:1500,range:90,arc:100,pierce:6,knockback:360,stun:0.6},
-  chainsaw:{name:"Motosega",icon:"🪚",rarity:'rare',archetype:'aura',dmg:9,cd:220,radius:85,channel:true},
+  chainsaw:{name:"Motosega",icon:"🪚",rarity:'rare',archetype:'aura',dmg:9,cd:170,radius:85,channel:true},
   drill:{name:"Trapano",icon:"🛠️",rarity:'rare',archetype:'projectile',dmg:16,cd:380,count:1,speed:600,pierce:5},
   nailgun:{name:"Chiodatrice",icon:"🗜️",rarity:'rare',archetype:'projectile',dmg:11,cd:260,count:1,speed:640,pierce:4,ignoreArmor:true},
-  blower:{name:"Soffiatore industriale",icon:"🌬️",rarity:'rare',archetype:'aura',dmg:5,cd:350,radius:140,cone:100,knockback:260},
+  blower:{name:"Soffiatore industriale",icon:"🌬️",rarity:'rare',archetype:'aura',dmg:5,cd:270,radius:140,cone:100,knockback:260},
 
   // ---------- LEGGENDARIE ----------
   laptop:{name:"Laptop del CEO",icon:"💻",rarity:'legendary',archetype:'projectile',dmg:30,cd:900,count:1,speed:340,pierce:99,width:60,evolvesTo:'cyber_cannon'},
@@ -458,7 +458,7 @@ const WEAPONS = {
   fax:{name:"Fax Infernale",icon:"📠",rarity:'legendary',archetype:'nova',dmg:14,cd:1700,count:16,speed:340,pierce:2},
   copier:{name:"Fotocopiatrice Maledetta",icon:"📑",rarity:'legendary',archetype:'summon',dmg:9,cd:6000,count:1,duration:8,fireRate:450},
   stamp:{name:"Timbro del Direttore",icon:"🔏",rarity:'legendary',archetype:'nova',dmg:20,cd:2200,count:1,radius:150,stun:1.2,isSlam:true},
-  coffeemachine:{name:"Macchina del Caffè Suprema",icon:"♨️",rarity:'legendary',archetype:'aura',dmg:10,cd:250,radius:120,cone:80,burn:true},
+  coffeemachine:{name:"Macchina del Caffè Suprema",icon:"♨️",rarity:'legendary',archetype:'aura',dmg:10,cd:190,radius:120,cone:80,burn:true},
 
   // ---------- EVOLUTIONS ----------
   katana_office:{name:"Katana da ufficio",icon:"⚔️",iconKey:'cutter',rarity:'legendary',archetype:'melee',dmg:26,cd:340,range:110,arc:130,pierce:99,evolved:true},
@@ -474,8 +474,8 @@ const WEAPONS = {
 
   // ---------- ARMI INIZIALI PERSONAGGI ----------
   usb:{name:"Penna USB",icon:"💽",rarity:'common',archetype:'projectile',dmg:7,cd:520,count:1,speed:460,pierce:1,bounces:4},
-  megaphone:{name:"Megafono",icon:"📢",rarity:'common',archetype:'aura',dmg:4,cd:700,radius:130,cone:140,knockback:300},
-  mop_boosted:{name:"Mocio Potenziato",icon:"🧽",rarity:'common',archetype:'aura',dmg:8,cd:550,radius:95,cone:110},
+  megaphone:{name:"Megafono",icon:"📢",rarity:'common',archetype:'aura',dmg:5,cd:380,radius:130,cone:150,knockback:300},
+  mop_boosted:{name:"Mocio Potenziato",icon:"🧽",rarity:'common',archetype:'aura',dmg:9,cd:320,radius:95,cone:130},
   briefcase:{name:"Valigetta del CEO",icon:"💼",rarity:'common',archetype:'projectile',dmg:14,cd:900,count:1,speed:380,pierce:1,explodeRadius:85},
 };
 // backfill defaults
@@ -1359,12 +1359,19 @@ function doAuraTick(wd,dmg,w){
   const p=game.player;
   const radius=effRange(wd);
   let hitAny=false;
+  // cone weapons aim at the nearest threat instead of last movement direction,
+  // so standing still or backing away doesn't make them whiff every enemy
+  let aimAng=p.facing;
+  if(wd.cone){
+    const t=nearestEnemy(p.x,p.y,radius);
+    if(t) aimAng=angleTo(p.x,p.y,t.x,t.y);
+  }
   for(const e of allTargets()){
     const d=dist(p.x,p.y,e.x,e.y);
     if(d>radius) continue;
     if(wd.cone){
       const a=angleTo(p.x,p.y,e.x,e.y);
-      let da=Math.abs(a-p.facing); if(da>Math.PI) da=TAU-da;
+      let da=Math.abs(a-aimAng); if(da>Math.PI) da=TAU-da;
       if(da> (wd.cone*Math.PI/180)/2) continue;
     }
     dealDamage(e,dmg,{});
@@ -1380,7 +1387,7 @@ function doAuraTick(wd,dmg,w){
       }
     }
   }
-  if(hitAny) game.particles.push({kind:'auraPulse',x:p.x,y:p.y,r:radius,life:0.3,age:0,cone:wd.cone,ang:p.facing});
+  if(hitAny) game.particles.push({kind:'auraPulse',x:p.x,y:p.y,r:radius,life:0.3,age:0,cone:wd.cone,ang:aimAng});
 }
 
 /* orbit weapons — persistent visual + continuous collision */
@@ -1401,8 +1408,8 @@ function updateOrbiters(dt){
       for(const e of allTargets()){
         const key=w.id+'_'+i;
         e.orbitHit=e.orbitHit||{};
-        if(dist(ox,oy,e.x,e.y)<28){
-          if(!e.orbitHit[key] || game.time-e.orbitHit[key]>0.35){
+        if(dist(ox,oy,e.x,e.y)<32){
+          if(!e.orbitHit[key] || game.time-e.orbitHit[key]>0.22){
             dealDamage(e,dmg,{});
             e.orbitHit[key]=game.time;
           }
