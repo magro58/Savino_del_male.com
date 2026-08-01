@@ -63,6 +63,8 @@
   .subtitle{font-size:min(4vw,20px);color:var(--gold);margin-top:4px;letter-spacing:3px;text-transform:uppercase;}
   .flavor{color:#999;max-width:520px;margin:14px auto;font-size:13px;line-height:1.5;}
   .bigBtn{margin-top:22px;padding:14px 38px;font-size:20px;font-weight:bold;background:linear-gradient(180deg,#c0392b,#7d1010);border:2px solid #ff6655;color:#fff;border-radius:10px;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 0 #4a0a0a;}
+  .menuBtnRow{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;}
+  .menuSecondary{background:linear-gradient(180deg,#3a3a3a,#1c1c1c);border-color:#777;box-shadow:0 4px 0 #0a0a0a;}
   .bigBtn:active{transform:translateY(3px);box-shadow:none;}
   .smallHint{margin-top:16px;color:#777;font-size:12px;}
   #zombiesBG{position:absolute;inset:0;font-size:26px;opacity:.12;overflow:hidden;pointer-events:none;line-height:1.4;letter-spacing:8px;}
@@ -163,10 +165,12 @@
     <h1 class="title">SAVINO DEL MALE</h1>
     <div class="subtitle">Office Zombie Survivor</div>
     <p class="flavor">L'open space è caduto. I tuoi colleghi si sono trasformati in orde di dipendenti-zombie affamati di straordinari.
-    Raccogli armi d'ufficio, sali di livello e sopravvivi alle ondate. Ogni 5 livelli un Manager verrà a chiedere il resoconto del progetto... di persona.</p>
-    <button class="bigBtn clickable" id="startBtn">INIZIA IL TURNO</button>
+    Raccogli armi d'ufficio dal loot, sali di livello e sopravvivi alle ondate. Ogni tanto un Manager verrà a chiedere il resoconto del progetto... di persona.</p>
+    <div class="menuBtnRow">
+      <button class="bigBtn clickable" id="startBtn">🎮 GIOCA</button>
+      <button class="bigBtn clickable menuSecondary" id="settingsBtnStart">⚙️ IMPOSTAZIONI</button>
+    </div>
     <div class="smallHint">Muoviti con WASD / Frecce — tieni premuto il CLICK (o il pulsante 🎯 su mobile) per attaccare — le armi si consumano con l'uso, raccogli munizioni 📦 per ricaricarle — ESC per la pausa</div>
-    <button class="gearBtn clickable" id="settingsBtnStart" title="Impostazioni">⚙️</button>
   </div>
 
   <!-- Settings screen -->
@@ -670,6 +674,7 @@ const BOSSES = [
   {id:'pm',name:"Il Project Manager",icon:"📢",hp:840,spd:90,dmg:14,xp:160,pattern:'pm'},
   {id:'ceo',name:"Il CEO",icon:"👑",hp:1400,spd:95,dmg:20,xp:260,pattern:'ceo'},
 ];
+const BOSS_INTERVAL = 300; // seconds between boss waves (~5 minutes)
 
 /* ---------------------------- Character Data ---------------------------- */
 const CHARACTERS = {
@@ -858,7 +863,7 @@ function initGame(charId){
     player, time:0, wave:1, kills:0,
     enemies:[], projectiles:[], enemyProjectiles:[], pickups:[], particles:[], floaters:[], clones:[],
     spawnTimer:0, gadgetTimer:rand(14,20),
-    boss:null, nextBossLevel:5, bossIndex:0, bossLoop:0,
+    boss:null, nextBossTime:BOSS_INTERVAL, bossIndex:0, bossLoop:0,
     camX:player.x, camY:player.y,
     screenShake:0,
     over:false,
@@ -936,7 +941,7 @@ function addFloater(x,y,text,color,size){
 const ENEMY_IDS=Object.keys(ENEMIES);
 function difficultyMult(){
   const t=game.time;
-  return 1 + t/45 + game.player.level*0.06;
+  return 1 + t/40 + game.player.level*0.05;
 }
 function spawnEnemy(typeId, x, y){
   const d=ENEMIES[typeId];
@@ -944,8 +949,8 @@ function spawnEnemy(typeId, x, y){
   const e={
     type:d, x, y, r:15,
     hp: (18*d.hp)*dm, maxHp:(18*d.hp)*dm,
-    spd: d.spd*(58+game.time*0.35),
-    dmg: (6*d.dmg)*(1+game.time/160),
+    spd: d.spd*Math.min(230, 58+game.time*0.6),
+    dmg: (6*d.dmg)*(1+game.time/130),
     xp: d.xp,
     behavior:d.behavior,
     hitCooldown:0, rangedTimer:rand(0.5,1.5), auraTimer:0,
@@ -963,9 +968,9 @@ function randEdgePos(){
 function updateSpawning(dt){
   if(game.boss) return; // no normal spawns during boss fight
   game.spawnTimer-=dt;
-  const maxAlive=Math.min(260, 40+game.time*1.1);
+  const maxAlive=Math.min(320, 40+game.time*1.4);
   if(game.spawnTimer<=0 && game.enemies.length<maxAlive){
-    const batch=1+Math.floor(game.time/25);
+    const batch=1+Math.floor(game.time/20);
     for(let i=0;i<batch;i++){
       const pos=randEdgePos();
       // variant specials rarer
@@ -974,7 +979,7 @@ function updateSpawning(dt){
       const t = useSpecial? pick(specials) : pick(ENEMY_IDS.filter(id=>!specials.includes(id)));
       spawnEnemy(t,pos.x,pos.y);
     }
-    game.spawnTimer = Math.max(0.28, 1.1-game.time/240);
+    game.spawnTimer = Math.max(0.16, 1.1-game.time/190);
   }
   // gadget pickups periodically
   game.gadgetTimer-=dt;
@@ -994,7 +999,7 @@ function spawnGadgetPickup(){
 /* ---------------------------- Boss spawn ---------------------------- */
 function trySpawnBoss(){
   if(game.boss) return;
-  if(game.player.level < game.nextBossLevel) return;
+  if(game.time < game.nextBossTime) return;
   const bd = BOSSES[game.bossIndex % BOSSES.length];
   const loopMult = 1+game.bossLoop*0.6;
   const p=game.player;
@@ -1012,15 +1017,16 @@ function trySpawnBoss(){
   showToast('⚠️ ' + bd.name + ' è arrivato/a! ⚠️', '#ff4444');
 }
 function endBoss(boss){
-  // rewards
+  // rewards — scaled to a couple of levels' worth of XP, not a level explosion,
+  // and it naturally grows over time since xpNext itself grows with level.
   const p=game.player;
   AudioSys.sfx.bossDefeat();
-  addXP(boss.xp*4);
+  addXP(p.xpNext*1.6 + game.bossLoop*40);
   p.hp = Math.min(p.stats.maxHp, p.hp + p.stats.maxHp*0.35);
   showToast('✅ '+boss.data.name+' sconfitto/a! +Vita, +EXP', '#2ecc71');
   game.boss=null;
   document.getElementById('bossBarWrap').style.display='none';
-  game.nextBossLevel += 5;
+  game.nextBossTime += BOSS_INTERVAL;
   game.bossIndex++;
   if(game.bossIndex % BOSSES.length===0) game.bossLoop++;
   // drop a guaranteed chest
@@ -1134,21 +1140,14 @@ function showLevelUpCard(){
   const p=game.player;
   const options=[];
 
-  // candidate: new weapon (if slots free)
-  const ownedIds=new Set(p.weapons.map(w=>w.id));
-  const availableNew = Object.values(WEAPONS).filter(w=>!w.evolved && !ownedIds.has(w.id));
-  if(p.weapons.length<6 && availableNew.length){
-    const luckBoost=p.stats.luck;
-    const pool = availableNew.map(w=>[w, RARITY[w.rarity].weight * (w.rarity==='rare'||w.rarity==='epic'||w.rarity==='legendary'? (1+luckBoost*2):1)]);
-    const w = weightedPick(pool);
-    options.push({type:'newWeapon',weapon:w});
-  }
+  // Weapons are found only via loot on the map — level-up only offers
+  // upgrades to weapons already owned, plus stat boosts.
   // candidate: upgrade existing weapon
   const upgradable = p.weapons.filter(w=>{
     const d=WEAPONS[w.id];
     return w.level < d.maxLevel;
   });
-  for(let i=0;i<2 && upgradable.length;i++){
+  for(let i=0;i<3 && upgradable.length;i++){
     const w=pick(upgradable);
     if(!options.find(o=>o.type==='upgrade'&&o.weapon.id===w.id))
       options.push({type:'upgrade',weapon:w});
@@ -1163,12 +1162,7 @@ function showLevelUpCard(){
   for(const opt of options.slice(0,4)){
     const card=document.createElement('div');
     card.className='card clickable';
-    if(opt.type==='newWeapon'){
-      const w=opt.weapon, rc=RARITY[w.rarity];
-      card.style.borderColor=rc.color;
-      card.innerHTML=`<div class="icon">${iconHtml(w)}</div><div class="name">${w.name}</div><div class="desc">Nuova arma! ${archetypeDesc(w)}</div><div class="rarity" style="color:${rc.color}">${rc.name}</div>`;
-      card.onclick=()=>chooseOption(()=>{ p.weapons.push(makeWeaponInstance(w.id)); showToast('Nuova arma: '+w.name,rc.color); });
-    } else if(opt.type==='upgrade'){
+    if(opt.type==='upgrade'){
       const w=WEAPONS[opt.weapon.id], rc=RARITY[w.rarity];
       const nextLevel=opt.weapon.level+1;
       card.style.borderColor=rc.color;
@@ -1194,11 +1188,6 @@ function showLevelUpCard(){
     cardsEl.appendChild(card);
   }
   screen.classList.remove('hidden');
-}
-function archetypeDesc(w){
-  const map={melee:'Arma da mischia',orbit:'Ruota attorno a te',projectile:'Spara proiettili',spread:'Spara a raggiera',
-    boomerang:'Torna indietro',nova:'Esplosione radiale',aura:'Danno continuo nell\'area',chain:'Fulmina i nemici vicini',summon:'Evoca un alleato'};
-  return map[w.archetype]||'';
 }
 function chooseOption(fn){
   fn();
