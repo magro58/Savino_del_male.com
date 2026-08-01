@@ -37,10 +37,14 @@
   #bossBarOuter{background:#000;border:2px solid var(--gold);border-radius:6px;height:16px;overflow:hidden;}
   #bossBarInner{height:100%;background:linear-gradient(90deg,#7d1010,#e74c3c);width:100%;transition:width .2s;}
 
-  #weaponBar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:6px;}
+  #weaponBar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;align-items:flex-start;gap:6px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:6px;}
   .wIcon{position:relative;width:38px;height:38px;border-radius:8px;background:#0006;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid var(--grey);}
   .wIcon .lvl{position:absolute;bottom:-4px;right:-4px;background:#000;border:1px solid #555;border-radius:50%;font-size:9px;padding:1px 4px;}
   .wIcon .evo{position:absolute;top:-6px;left:-6px;font-size:12px;}
+  .wSlot{display:flex;flex-direction:column;align-items:center;gap:3px;width:58px;}
+  .wName{font-size:8.5px;line-height:1.15;text-align:center;color:#ccc;max-width:58px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    text-shadow:0 1px 2px #000;font-weight:600;}
 
   #levelBadge{position:absolute;bottom:12px;left:14px;background:var(--panel);border:1px solid var(--border);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:16px;color:var(--gold);}
 
@@ -1604,12 +1608,21 @@ function updateHUDWeapons(){
   bar.innerHTML='';
   for(const w of game.player.weapons){
     const wd=WEAPONS[w.id];
+    const slot=document.createElement('div');
+    slot.className='wSlot';
     const div=document.createElement('div');
     div.className='wIcon';
     div.style.borderColor=RARITY[wd.rarity].color;
     const iconHtml = hasIcon(wd.iconKey) ? `<img src="${ICONS[wd.iconKey].src}" style="max-width:30px;max-height:30px;">` : wd.icon;
     div.innerHTML=`${iconHtml}<div class="lvl">${wd.evolved?'MAX':w.level}</div>${wd.evolved?'<div class="evo">✨</div>':''}`;
-    bar.appendChild(div);
+    slot.appendChild(div);
+    const name=document.createElement('div');
+    name.className='wName';
+    name.textContent=wd.name;
+    name.title=wd.name;
+    name.style.color=RARITY[wd.rarity].color;
+    slot.appendChild(name);
+    bar.appendChild(slot);
   }
 }
 function updateHUD(){
