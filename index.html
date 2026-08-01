@@ -809,7 +809,7 @@ function makePlayer(charId){
     invuln:0,
     character:charId,
     stats:{
-      maxHp:100, moveSpeed:200, damageMult:1, cooldownMult:1, areaMult:1,
+      maxHp:100, moveSpeed:225, damageMult:1, cooldownMult:1, areaMult:1,
       pickupRadius:90, armor:0, regen:0, luck:0, xpMult:1, extraProjectiles:0,
     },
     tempSlowUntil:0, tempSlowFactor:1,
@@ -820,7 +820,7 @@ function makePlayer(charId){
   };
   if(c){
     player.stats.maxHp = Math.round(100*c.mult.hp);
-    player.stats.moveSpeed = Math.round(200*c.mult.spd);
+    player.stats.moveSpeed = Math.round(225*c.mult.spd);
     player.stats.damageMult = c.mult.dmg;
     player.stats.areaMult = c.mult.area;
     player.hp = player.stats.maxHp;
@@ -862,7 +862,7 @@ function initGame(charId){
   game={
     player, time:0, wave:1, kills:0,
     enemies:[], projectiles:[], enemyProjectiles:[], pickups:[], particles:[], floaters:[], clones:[],
-    spawnTimer:0, gadgetTimer:rand(14,20),
+    spawnTimer:0, gadgetTimer:rand(14,20), weaponSpawnTimer:rand(6,10),
     boss:null, nextBossTime:BOSS_INTERVAL, bossIndex:0, bossLoop:0,
     camX:player.x, camY:player.y,
     screenShake:0,
@@ -994,6 +994,21 @@ function updateSpawning(dt){
     spawnGadgetPickup();
     game.gadgetTimer=rand(16,24);
   }
+  // weapons scattered on the floor to be found while exploring, not just from kills
+  game.weaponSpawnTimer-=dt;
+  if(game.weaponSpawnTimer<=0){
+    spawnFloorWeapon();
+    game.weaponSpawnTimer=rand(11,17);
+  }
+}
+
+function spawnFloorWeapon(){
+  const p=game.player;
+  const ang=rand(0,TAU);
+  const d=rand(220,850);
+  const x=clamp(p.x+Math.cos(ang)*d,40,WORLD-40);
+  const y=clamp(p.y+Math.sin(ang)*d,40,WORLD-40);
+  game.pickups.push({kind:'weapon',weaponId:pickLootWeaponId(game.player.stats.luck||0),x,y,r:13,bob:0});
 }
 
 function spawnGadgetPickup(){
@@ -1957,6 +1972,35 @@ function render(){
   drawFloaters();
 
   ctx.restore();
+  drawWeaponIndicators();
+}
+function drawWeaponIndicators(){
+  const p=game.player;
+  const detectionRadius=2000;
+  const candidates=game.pickups.filter(pk=>pk.kind==='weapon' && dist(p.x,p.y,pk.x,pk.y)<detectionRadius && !inView(pk.x,pk.y,50));
+  if(!candidates.length) return;
+  candidates.sort((a,b)=>dist2(p.x,p.y,a.x,a.y)-dist2(p.x,p.y,b.x,b.y));
+  const margin=44, cx=VW/2, cy=VH/2;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(const pk of candidates.slice(0,4)){
+    const wd=WEAPONS[pk.weaponId];
+    const rc=RARITY[wd.rarity];
+    const ang=angleTo(p.x,p.y,pk.x,pk.y);
+    const dx=Math.cos(ang), dy=Math.sin(ang);
+    const sx = dx!==0 ? (cx-margin)/Math.abs(dx) : Infinity;
+    const sy = dy!==0 ? (cy-margin)/Math.abs(dy) : Infinity;
+    const s=Math.min(sx,sy);
+    const ix=cx+dx*s, iy=cy+dy*s;
+    ctx.save();
+    ctx.translate(ix,iy);
+    ctx.rotate(ang);
+    ctx.fillStyle=rc.color;
+    ctx.shadowColor=rc.color; ctx.shadowBlur=6;
+    ctx.beginPath();
+    ctx.moveTo(13,0); ctx.lineTo(-7,-8); ctx.lineTo(-7,8); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    drawIcon(wd.iconKey, ix-dx*24, iy-dy*24, 22, wd.icon);
+  }
 }
 
 function drawFloor(){
