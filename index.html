@@ -636,6 +636,7 @@ function initGame(charId){
     screenShake:0,
     over:false,
     decor: makeDecor(),
+    obstacles: makeObstacles(),
   };
   updateHUDWeapons();
   updateLevelBadge();
@@ -648,6 +649,47 @@ function makeDecor(){
     arr.push({x:rand(60,WORLD-60),y:rand(60,WORLD-60),icon:pick(items),s:rand(18,30)});
   }
   return arr;
+}
+
+/* ---------------------------- Obstacles (solid, block movement) ---------------------------- */
+const OBSTACLE_TYPES = [
+  {icon:'🗄️', r:24, size:44},
+  {icon:'📦', r:19, size:34},
+  {icon:'🪴', r:17, size:32},
+  {icon:'🚰', r:19, size:34},
+  {icon:'🖨️', r:19, size:32},
+  {icon:'🪑', r:15, size:28},
+  {icon:'🧊', r:17, size:32},
+];
+function makeObstacles(){
+  const arr=[];
+  const px=WORLD/2, py=WORLD/2;
+  let attempts=0;
+  while(arr.length<48 && attempts<800){
+    attempts++;
+    const x=rand(90,WORLD-90), y=rand(90,WORLD-90);
+    if(dist(x,y,px,py)<280) continue;
+    const t=pick(OBSTACLE_TYPES);
+    let overlap=false;
+    for(const o of arr){ if(dist(x,y,o.x,o.y) < (o.r+t.r+40)){ overlap=true; break; } }
+    if(overlap) continue;
+    arr.push({x,y,r:t.r,size:t.size,icon:t.icon});
+  }
+  return arr;
+}
+function resolveObstacles(entity){
+  for(const o of game.obstacles){
+    const dx=entity.x-o.x, dy=entity.y-o.y;
+    const d=Math.hypot(dx,dy);
+    const minD=entity.r+o.r;
+    if(d>0 && d<minD){
+      const push=(minD-d);
+      entity.x+=dx/d*push;
+      entity.y+=dy/d*push;
+    }
+  }
+  entity.x=clamp(entity.x,10,WORLD-10);
+  entity.y=clamp(entity.y,10,WORLD-10);
 }
 
 /* ---------------------------- Toasts / floaters ---------------------------- */
@@ -773,6 +815,7 @@ function updatePlayer(dt){
   const spd=p.stats.moveSpeed*speedMult;
   p.x=clamp(p.x+vx*spd*dt,20,WORLD-20);
   p.y=clamp(p.y+vy*spd*dt,20,WORLD-20);
+  resolveObstacles(p);
 
   // regen
   if(p.stats.regen>0) p.hp=Math.min(p.stats.maxHp,p.hp+p.stats.regen*dt);
@@ -1314,6 +1357,7 @@ function updateEnemyAI(e,dt){
     }
   }
   e.x=clamp(e.x,10,WORLD-10); e.y=clamp(e.y,10,WORLD-10);
+  resolveObstacles(e);
 }
 
 /* ---------------------------- Boss AI ---------------------------- */
@@ -1591,6 +1635,7 @@ function render(){
   ctx.fillRect(0,0,VW,VH);
   drawFloor();
   drawDecor();
+  drawObstacles();
   drawPuddles();
   drawPickups();
   drawOrbiters();
@@ -1634,6 +1679,17 @@ function drawDecor(){
     ctx.fillText(d.icon,s.x,s.y);
   }
   ctx.globalAlpha=1;
+}
+function drawObstacles(){
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  for(const o of game.obstacles){
+    if(!inView(o.x,o.y,70)) continue;
+    const s=worldToScreen(o.x,o.y);
+    ctx.fillStyle='rgba(0,0,0,0.35)';
+    ctx.beginPath(); ctx.ellipse(s.x,s.y+o.size*0.32,o.size*0.42,o.size*0.16,0,0,TAU); ctx.fill();
+    ctx.font=o.size+'px sans-serif';
+    ctx.fillText(o.icon,s.x,s.y);
+  }
 }
 function drawPuddles(){
   for(const pt of game.particles){
