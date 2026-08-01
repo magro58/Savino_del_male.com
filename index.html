@@ -51,8 +51,8 @@
 
   #levelBadge{position:absolute;bottom:12px;left:14px;background:var(--panel);border:1px solid var(--border);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:16px;color:var(--gold);}
 
-  #toastWrap{position:absolute;top:70px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;pointer-events:none;}
-  .toast{background:#000c;border:1px solid var(--gold);color:var(--gold);padding:4px 12px;border-radius:6px;font-weight:bold;font-size:13px;animation:fadeUp 2.2s forwards;}
+  #toastWrap{position:absolute;top:260px;right:10px;left:auto;width:140px;display:flex;flex-direction:column;align-items:stretch;gap:3px;pointer-events:none;}
+  .toast{background:#000c;border:1px solid var(--gold);color:var(--gold);padding:3px 6px;border-radius:5px;font-weight:bold;font-size:9.5px;line-height:1.25;text-align:center;animation:fadeUp 2.2s forwards;}
   @keyframes fadeUp{0%{opacity:0;transform:translateY(6px);}10%{opacity:1;transform:translateY(0);}80%{opacity:1;}100%{opacity:0;transform:translateY(-10px);}}
 
   /* ---------- Screens ---------- */
@@ -72,7 +72,7 @@
   /* level up */
   #levelUpScreen{background:#000000cc;}
   #levelUpScreen h2{color:var(--gold);margin-bottom:4px;font-size:26px;}
-  #cards{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:900px;margin-top:14px;}
+  #cards,#swapCards{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:900px;margin-top:14px;}
   .card{width:190px;background:#1b1b1b;border:2px solid var(--grey);border-radius:12px;padding:12px;cursor:pointer;transition:transform .1s,border-color .1s;}
   .card:hover{transform:translateY(-4px);border-color:#fff;}
   .card .icon{font-size:34px;}
@@ -226,6 +226,15 @@
     <h2>LEVEL UP!</h2>
     <div style="color:#999;font-size:13px;">Scegli un potenziamento</div>
     <div id="cards"></div>
+  </div>
+
+  <!-- legendary weapon swap -->
+  <div id="weaponSwapScreen" class="screen hidden">
+    <h2>⭐ ARMA LEGGENDARIA! ⭐</h2>
+    <div id="swapNewWeapon" style="color:#e6b800;font-size:14px;margin-bottom:6px;"></div>
+    <div style="color:#999;font-size:13px;">Inventario pieno: scegli quale arma sostituire</div>
+    <div id="swapCards"></div>
+    <button class="clickable" id="swapDiscardBtn" style="margin-top:14px;background:none;border:1px solid #666;color:#aaa;padding:8px 18px;border-radius:8px;font-size:13px;">Scarta (converti in EXP)</button>
   </div>
 
   <!-- pause -->
@@ -742,7 +751,7 @@ let selectedCharacterId=null;
 /* ---------------------------- Global State ---------------------------- */
 const input={x:0,y:0,keys:{},mouseDown:false,mouseWorldX:undefined,mouseWorldY:undefined};
 let game=null; // holds full run state
-let running=false, paused=false, levelUpOpen=false;
+let running=false, paused=false, levelUpOpen=false, weaponSwapOpen=false;
 let lastTime=performance.now();
 
 /* ---------------------------- Input ---------------------------- */
@@ -832,7 +841,7 @@ function makePlayer(charId){
     invuln:0,
     character:charId,
     stats:{
-      maxHp:100, moveSpeed:340, damageMult:1, cooldownMult:1, areaMult:1,
+      maxHp:100, moveSpeed:375, damageMult:1, cooldownMult:1, areaMult:1,
       pickupRadius:90, armor:0, regen:0, luck:0, xpMult:1, extraProjectiles:0,
     },
     tempSlowUntil:0, tempSlowFactor:1,
@@ -845,7 +854,7 @@ function makePlayer(charId){
   };
   if(c){
     player.stats.maxHp = Math.round(100*c.mult.hp);
-    player.stats.moveSpeed = Math.round(340*c.mult.spd);
+    player.stats.moveSpeed = Math.round(375*c.mult.spd);
     player.stats.damageMult = c.mult.dmg;
     player.stats.areaMult = c.mult.area;
     player.hp = player.stats.maxHp;
@@ -980,7 +989,7 @@ function spawnEnemy(typeId, x, y){
   const e={
     type:d, x, y, r:15,
     hp: (18*d.hp)*dm, maxHp:(18*d.hp)*dm,
-    spd: d.spd*Math.min(272, 66+pr*0.8),
+    spd: d.spd*Math.min(288, 72+pr*0.85),
     dmg: (6*d.dmg)*(1+pr/130),
     xp: d.xp,
     behavior:d.behavior,
@@ -1015,7 +1024,7 @@ function updateSpawning(dt){
       const t = useSpecial? pick(specials) : pick(ENEMY_IDS.filter(id=>!specials.includes(id)));
       spawnEnemy(t,pos.x,pos.y);
     }
-    game.spawnTimer = Math.max(0.2, 1.0-(pr+kb)/220);
+    game.spawnTimer = Math.max(0.16, 0.95-(pr+kb)/220);
   }
   // gadget pickups periodically
   game.gadgetTimer-=dt;
@@ -1364,7 +1373,7 @@ function allTargets(){
 /* ---------------------------- Emergency kick ---------------------------- */
 const KICK_COOLDOWN=7, KICK_RADIUS=140, KICK_DMG=24, KICK_KNOCKBACK=420;
 function tryEmergencyKick(){
-  if(!running || paused || levelUpOpen || !game) return;
+  if(!running || paused || levelUpOpen || weaponSwapOpen || !game) return;
   const p=game.player;
   if(p.kickCooldown>0) return;
   p.kickCooldown=KICK_COOLDOWN;
@@ -1956,10 +1965,46 @@ function collectWeaponPickup(weaponId){
     p.weapons.push(makeWeaponInstance(weaponId));
     showToast('🎯 Nuova arma: '+wd.name,RARITY[wd.rarity].color);
     updateHUDWeapons();
+  } else if(wd.rarity==='legendary'){
+    showWeaponSwapPrompt(weaponId);
   } else {
     addXP(15);
     showToast('Inventario pieno! '+wd.name+' convertita in EXP','#999');
   }
+}
+let pendingSwapWeaponId=null;
+function showWeaponSwapPrompt(newWeaponId){
+  weaponSwapOpen=true;
+  paused=true;
+  pendingSwapWeaponId=newWeaponId;
+  const p=game.player;
+  const wd=WEAPONS[newWeaponId];
+  document.getElementById('swapNewWeapon').innerHTML=`${iconHtml(wd,32)} <b style="color:${RARITY[wd.rarity].color}">${wd.name}</b> trovata!`;
+  const cardsEl=document.getElementById('swapCards');
+  cardsEl.innerHTML='';
+  for(const w of p.weapons){
+    const owd=WEAPONS[w.id];
+    const rc=RARITY[owd.rarity];
+    const card=document.createElement('div');
+    card.className='card clickable';
+    card.style.borderColor=rc.color;
+    card.innerHTML=`<div class="icon">${iconHtml(owd)}</div><div class="name">${owd.name} Lv.${w.level}</div><div class="rarity" style="color:${rc.color}">${rc.name}</div>`;
+    card.onclick=()=>{
+      const idx=p.weapons.indexOf(w);
+      p.weapons[idx]=makeWeaponInstance(newWeaponId);
+      showToast('🎯 '+owd.name+' sostituita con '+wd.name+'!',RARITY[wd.rarity].color);
+      closeWeaponSwapPrompt();
+    };
+    cardsEl.appendChild(card);
+  }
+  document.getElementById('weaponSwapScreen').classList.remove('hidden');
+}
+function closeWeaponSwapPrompt(){
+  document.getElementById('weaponSwapScreen').classList.add('hidden');
+  weaponSwapOpen=false;
+  paused=false;
+  pendingSwapWeaponId=null;
+  updateHUDWeapons();
 }
 function collectAmmoPickup(){
   const p=game.player;
@@ -2408,7 +2453,7 @@ function gameStep(dt){
 function frame(now){
   const dt=Math.min(0.05,(now-lastTime)/1000);
   lastTime=now;
-  if(running && !paused && !levelUpOpen){
+  if(running && !paused && !levelUpOpen && !weaponSwapOpen){
     gameStep(dt);
   }
   if(game) render();
@@ -2418,12 +2463,20 @@ requestAnimationFrame(frame);
 
 /* ---------------------------- Pause / Screens ---------------------------- */
 function togglePause(){
-  if(!running || levelUpOpen) return;
+  if(!running || levelUpOpen || weaponSwapOpen) return;
   paused=!paused;
   AudioSys.sfx.click();
   document.getElementById('pauseScreen').classList.toggle('hidden',!paused);
 }
 document.getElementById('resumeBtn').onclick=()=>togglePause();
+document.getElementById('swapDiscardBtn').onclick=()=>{
+  if(pendingSwapWeaponId){
+    const wd=WEAPONS[pendingSwapWeaponId];
+    addXP(15);
+    showToast('Inventario pieno! '+wd.name+' convertita in EXP','#999');
+  }
+  closeWeaponSwapPrompt();
+};
 
 function gameOver(){
   running=false;
