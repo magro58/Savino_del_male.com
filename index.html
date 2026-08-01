@@ -939,18 +939,24 @@ function addFloater(x,y,text,color,size){
 
 /* ---------------------------- Spawning ---------------------------- */
 const ENEMY_IDS=Object.keys(ENEMIES);
+// Combined progress metric: difficulty scales with elapsed time AND how far
+// ahead the player's level is, so a fast-leveling player is challenged sooner
+// and a slower one isn't swarmed just because the clock ran.
+function progress(){
+  return game.time + game.player.level*12;
+}
 function difficultyMult(){
-  const t=game.time;
-  return 1 + t/40 + game.player.level*0.05;
+  return 1 + progress()/40;
 }
 function spawnEnemy(typeId, x, y){
   const d=ENEMIES[typeId];
   const dm=difficultyMult();
+  const pr=progress();
   const e={
     type:d, x, y, r:15,
     hp: (18*d.hp)*dm, maxHp:(18*d.hp)*dm,
-    spd: d.spd*Math.min(230, 58+game.time*0.6),
-    dmg: (6*d.dmg)*(1+game.time/130),
+    spd: d.spd*Math.min(230, 58+pr*0.6),
+    dmg: (6*d.dmg)*(1+pr/130),
     xp: d.xp,
     behavior:d.behavior,
     hitCooldown:0, rangedTimer:rand(0.5,1.5), auraTimer:0,
@@ -968,18 +974,19 @@ function randEdgePos(){
 function updateSpawning(dt){
   if(game.boss) return; // no normal spawns during boss fight
   game.spawnTimer-=dt;
-  const maxAlive=Math.min(320, 40+game.time*1.4);
+  const pr=progress();
+  const maxAlive=Math.min(180, 35+pr*0.6);
   if(game.spawnTimer<=0 && game.enemies.length<maxAlive){
-    const batch=1+Math.floor(game.time/20);
+    const batch=1+Math.floor(pr/35);
     for(let i=0;i<batch;i++){
       const pos=randEdgePos();
       // variant specials rarer
       const specials=['teamlead','ecowarrior','glutton','auditor','cleaner'];
-      const useSpecial = Math.random()<0.12+Math.min(0.15,game.time/900);
+      const useSpecial = Math.random()<0.12+Math.min(0.15,pr/900);
       const t = useSpecial? pick(specials) : pick(ENEMY_IDS.filter(id=>!specials.includes(id)));
       spawnEnemy(t,pos.x,pos.y);
     }
-    game.spawnTimer = Math.max(0.16, 1.1-game.time/190);
+    game.spawnTimer = Math.max(0.35, 1.15-pr/280);
   }
   // gadget pickups periodically
   game.gadgetTimer-=dt;
