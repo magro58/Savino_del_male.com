@@ -100,9 +100,9 @@
   .charCard .boxDesc{font-size:10px;color:#aaa;margin-top:2px;line-height:1.3;}
 
   #gameOverScreen h1.title{color:#888;}
-  #statsBox{background:#1b1b1bcc;border:1px solid var(--border);border-radius:10px;padding:16px 26px;margin-top:10px;min-width:240px;}
-  #statsBox div{display:flex;justify-content:space-between;gap:30px;font-size:14px;padding:3px 0;border-bottom:1px dashed #333;}
-  #statsBox div:last-child{border-bottom:none;}
+  #statsBox,#victoryStatsBox{background:#1b1b1bcc;border:1px solid var(--border);border-radius:10px;padding:16px 26px;margin-top:10px;min-width:240px;}
+  #statsBox div,#victoryStatsBox div{display:flex;justify-content:space-between;gap:30px;font-size:14px;padding:3px 0;border-bottom:1px dashed #333;}
+  #statsBox div:last-child,#victoryStatsBox div:last-child{border-bottom:none;}
 
   #pauseScreen{background:#000000aa;}
 
@@ -153,7 +153,7 @@
     <div id="topRight" class="hud-box">
       <button id="hudMuteBtn" class="clickable" title="Audio on/off">🔊</button>
       <div id="timer">00:00</div>
-      <div id="waveInfo">Ondata 1</div>
+      <div id="waveInfo">Livello 1/6</div>
       <div id="killCount">Uccisioni: 0</div>
     </div>
   </div>
@@ -250,6 +250,14 @@
     <div class="subtitle" style="color:#c0392b;">Sei stato consumato dall'ufficio</div>
     <div id="statsBox"></div>
     <button class="bigBtn clickable" id="restartBtn">RIPROVA IL TURNO</button>
+  </div>
+
+  <!-- Victory -->
+  <div id="victoryScreen" class="screen hidden">
+    <h1 class="title" style="color:#ffd700;">VITTORIA!</h1>
+    <div class="subtitle" style="color:#2ecc71;">Hai licenziato il CEO. L'ufficio è salvo.</div>
+    <div id="victoryStatsBox"></div>
+    <button class="bigBtn clickable" id="victoryRestartBtn">GIOCA ANCORA</button>
   </div>
 </div>
 
@@ -700,7 +708,7 @@ const BOSSES = [
   {id:'pm',name:"Il Project Manager",icon:"📢",hp:840,spd:90,dmg:14,xp:160,pattern:'pm'},
   {id:'ceo',name:"Il CEO",icon:"👑",hp:1400,spd:95,dmg:20,xp:260,pattern:'ceo'},
 ];
-const BOSS_INTERVAL = 260; // seconds between boss waves, shrinks each loop to track the faster pace
+const LEVELS_PER_STAGE = 5; // player levels per stage; a boss battle closes out each stage
 
 /* ---------------------------- Character Data ---------------------------- */
 const CHARACTERS = {
@@ -842,7 +850,7 @@ function makePlayer(charId){
     invuln:0,
     character:charId,
     stats:{
-      maxHp:100, moveSpeed:375, damageMult:1, cooldownMult:1, areaMult:1,
+      maxHp:100, moveSpeed:400, damageMult:1, cooldownMult:1, areaMult:1,
       pickupRadius:90, armor:0, regen:0, luck:0, xpMult:1, extraProjectiles:0,
     },
     tempSlowUntil:0, tempSlowFactor:1,
@@ -855,7 +863,7 @@ function makePlayer(charId){
   };
   if(c){
     player.stats.maxHp = Math.round(100*c.mult.hp);
-    player.stats.moveSpeed = Math.round(375*c.mult.spd);
+    player.stats.moveSpeed = Math.round(400*c.mult.spd);
     player.stats.damageMult = c.mult.dmg;
     player.stats.areaMult = c.mult.area;
     player.hp = player.stats.maxHp;
@@ -898,7 +906,7 @@ function initGame(charId){
     player, time:0, wave:1, kills:0,
     enemies:[], projectiles:[], enemyProjectiles:[], pickups:[], particles:[], floaters:[], clones:[],
     spawnTimer:0, gadgetTimer:rand(14,20), weaponSpawnTimer:rand(4,7),
-    boss:null, nextBossTime:BOSS_INTERVAL, bossIndex:0, bossLoop:0,
+    boss:null, nextBossLevel:LEVELS_PER_STAGE, bossIndex:0, victory:false,
     camX:player.x, camY:player.y,
     screenShake:0,
     over:false,
@@ -990,7 +998,7 @@ function spawnEnemy(typeId, x, y){
   const e={
     type:d, x, y, r:15,
     hp: (18*d.hp)*dm, maxHp:(18*d.hp)*dm,
-    spd: d.spd*Math.min(288, 72+pr*0.85),
+    spd: d.spd*Math.min(262, 64+pr*0.76),
     dmg: (6*d.dmg)*(1+pr/130),
     xp: d.xp,
     behavior:d.behavior,
@@ -1059,16 +1067,16 @@ function spawnGadgetPickup(){
 
 /* ---------------------------- Boss spawn ---------------------------- */
 function trySpawnBoss(){
-  if(game.boss) return;
-  if(game.time < game.nextBossTime) return;
-  const bd = BOSSES[game.bossIndex % BOSSES.length];
-  const loopMult = 1+game.bossLoop*0.6;
+  if(game.boss || game.victory) return;
+  if(game.bossIndex>=BOSSES.length) return;
+  if(game.player.level < game.nextBossLevel) return;
+  const bd = BOSSES[game.bossIndex];
   const p=game.player;
   const ang=rand(0,TAU); const R=Math.max(VW,VH)/2+160;
   game.enemies = game.enemies.filter(e=>false); // clear field for boss intro
   const boss={
     isBoss:true, data:bd, x:clamp(p.x+Math.cos(ang)*R,40,WORLD-40), y:clamp(p.y+Math.sin(ang)*R,40,WORLD-40),
-    r:34, hp:bd.hp*loopMult, maxHp:bd.hp*loopMult, spd:bd.spd, dmg:bd.dmg*loopMult, xp:bd.xp,
+    r:34, hp:bd.hp, maxHp:bd.hp, spd:bd.spd, dmg:bd.dmg, xp:bd.xp,
     phase:1, attackTimer:1.5, summonTimer:6, enraged:false, telegraph:null,
   };
   game.boss=boss;
@@ -1078,20 +1086,22 @@ function trySpawnBoss(){
   showToast('⚠️ ' + bd.name + ' è arrivato/a! ⚠️', '#ff4444');
 }
 function endBoss(boss){
-  // rewards — scaled to a couple of levels' worth of XP, not a level explosion,
-  // and it naturally grows over time since xpNext itself grows with level.
   const p=game.player;
+  const wasFinal = boss.data.id==='ceo';
   AudioSys.sfx.bossDefeat();
-  addXP(p.xpNext*1.6 + game.bossLoop*40);
-  p.hp = Math.min(p.stats.maxHp, p.hp + p.stats.maxHp*0.35);
-  showToast('✅ '+boss.data.name+' sconfitto/a! +Vita, +EXP', '#2ecc71');
   game.boss=null;
   document.getElementById('bossBarWrap').style.display='none';
-  // interval shrinks with each boss cleared, so boss cadence keeps pace with
-  // the game's own accelerating spawn/difficulty curve instead of staying fixed
-  game.nextBossTime += Math.max(150, BOSS_INTERVAL - game.bossIndex*14);
+  if(wasFinal){
+    triggerVictory();
+    return;
+  }
+  // rewards — scaled to a couple of levels' worth of XP, not a level explosion,
+  // and it naturally grows over time since xpNext itself grows with level.
+  addXP(p.xpNext*1.6 + game.bossIndex*40);
+  p.hp = Math.min(p.stats.maxHp, p.hp + p.stats.maxHp*0.35);
+  showToast('✅ '+boss.data.name+' sconfitto/a! +Vita, +EXP', '#2ecc71');
   game.bossIndex++;
-  if(game.bossIndex % BOSSES.length===0) game.bossLoop++;
+  game.nextBossLevel += LEVELS_PER_STAGE;
   // drop a guaranteed chest
   game.pickups.push({kind:'chest',x:boss.x,y:boss.y,r:16,bob:0});
 }
@@ -1523,9 +1533,18 @@ function updateClones(dt){
     const c=game.clones[i];
     c.age+=dt;
     const p=game.player;
-    // follow loosely
-    const d=dist(c.x,c.y,p.x,p.y);
-    if(d>60){ const a=angleTo(c.x,c.y,p.x,p.y); c.x+=Math.cos(a)*80*dt; c.y+=Math.sin(a)*80*dt; }
+    if(c.orbitAngle!==undefined){
+      // bodyguard behavior: hold a fixed slot around the player, rotating
+      // slowly, and close fast enough to keep up even at high player speed
+      c.orbitAngle += dt*0.5;
+      const tx=p.x+Math.cos(c.orbitAngle)*c.orbitRadius, ty=p.y+Math.sin(c.orbitAngle)*c.orbitRadius;
+      const lerp=Math.min(1,dt*8);
+      c.x+=(tx-c.x)*lerp; c.y+=(ty-c.y)*lerp;
+    } else {
+      // follow loosely
+      const d=dist(c.x,c.y,p.x,p.y);
+      if(d>60){ const a=angleTo(c.x,c.y,p.x,p.y); c.x+=Math.cos(a)*80*dt; c.y+=Math.sin(a)*80*dt; }
+    }
     c.fireTimer-=dt*1000;
     if(c.fireTimer<=0){
       const t=nearestEnemy(c.x,c.y,700);
@@ -1557,17 +1576,22 @@ function triggerKillStreaks(){
 }
 function spawnTeamPause(){
   const p=game.player;
-  const n=2+Math.floor(Math.random()*3); // 2-4 allies
+  const n=4;
+  const charIds=Object.keys(CHARACTERS).sort(()=>Math.random()-0.5).slice(0,n);
+  const orbitRadius=75;
   for(let i=0;i<n;i++){
     const ang=(TAU/n)*i;
+    const charId=charIds[i];
     game.clones.push({
-      x:clamp(p.x+Math.cos(ang)*50,20,WORLD-20), y:clamp(p.y+Math.sin(ang)*50,20,WORLD-20),
-      life:rand(6,8), age:0, fireTimer:0, dmg:10*p.stats.damageMult, fireRate:400, icon:'🧑‍💼',
+      x:clamp(p.x+Math.cos(ang)*orbitRadius,20,WORLD-20), y:clamp(p.y+Math.sin(ang)*orbitRadius,20,WORLD-20),
+      life:8, age:0, fireTimer:0, dmg:10*p.stats.damageMult, fireRate:400,
+      charId, icon:CHARACTERS[charId].portrait,
+      orbitAngle:ang, orbitRadius,
     });
   }
   game.screenShake=6;
   AudioSys.sfx.summon();
-  showToast('👥 Pausa Squadra! Colleghi in tuo aiuto!','#7fd858');
+  showToast('👥 Pausa Squadra! 4 colleghi ti proteggono!','#7fd858');
 }
 function checkSeniorTrigger(p){
   if(!p.seniorArmed || p.hp<=0) return;
@@ -2104,7 +2128,7 @@ function updateHUD(){
   document.getElementById('hpLabel').textContent=Math.max(0,Math.round(p.hp))+'/'+Math.round(p.stats.maxHp);
   document.getElementById('xpBar').style.width=Math.max(0,100*p.xp/p.xpNext)+'%';
   document.getElementById('timer').textContent=fmtTime(game.time);
-  document.getElementById('waveInfo').textContent='Ondata '+game.wave;
+  document.getElementById('waveInfo').textContent='Livello '+game.wave+'/'+BOSSES.length+' — prossimo boss a Lv.'+game.nextBossLevel;
   document.getElementById('killCount').textContent='Uccisioni: '+game.kills;
   updateWeaponDurabilityBars();
 }
@@ -2310,11 +2334,18 @@ function drawOrbiters(){
   }
 }
 function drawClones(){
-  ctx.font='22px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.textAlign='center'; ctx.textBaseline='middle';
   for(const c of game.clones){
     const s=worldToScreen(c.x,c.y);
-    ctx.globalAlpha=0.85;
-    ctx.fillText('🧑‍💼',s.x,s.y);
+    ctx.globalAlpha=0.9;
+    if(c.charId && hasPortrait(c.charId)){
+      const im=PORTRAIT_IMAGES[c.charId];
+      const targetH=36, targetW=targetH*(im.naturalWidth/im.naturalHeight);
+      ctx.drawImage(im,s.x-targetW/2,s.y-targetH/2,targetW,targetH);
+    } else {
+      ctx.font='22px sans-serif';
+      ctx.fillText(c.icon||'🧑‍💼',s.x,s.y);
+    }
     ctx.globalAlpha=1;
   }
 }
@@ -2429,9 +2460,9 @@ function drawFloaters(){
   }
 }
 
-/* ---------------------------- Wave counter ---------------------------- */
+/* ---------------------------- Stage counter ---------------------------- */
 function updateWave(){
-  game.wave = 1+Math.floor(game.time/30);
+  game.wave = Math.min(BOSSES.length, game.bossIndex+1);
 }
 
 /* ---------------------------- Game loop ---------------------------- */
@@ -2494,9 +2525,31 @@ function gameOver(){
     <div><span>Livello raggiunto</span><span>${game.player.level}</span></div>
     <div><span>Nemici uccisi</span><span>${game.kills}</span></div>
     <div><span>Armi raccolte</span><span>${game.player.weapons.length}</span></div>
-    <div><span>Ondata</span><span>${game.wave}</span></div>
+    <div><span>Livello raggiunto (boss)</span><span>${game.wave}/${BOSSES.length}</span></div>
   `;
   document.getElementById('gameOverScreen').classList.remove('hidden');
+}
+
+function triggerVictory(){
+  game.victory=true;
+  running=false;
+  paused=false;
+  levelUpOpen=false;
+  weaponSwapOpen=false;
+  pendingLevelUps=0;
+  AudioSys.sfx.bossDefeat();
+  AudioSys.stopMusic();
+  document.getElementById('levelUpScreen').classList.add('hidden');
+  document.getElementById('pauseScreen').classList.add('hidden');
+  document.getElementById('weaponSwapScreen').classList.add('hidden');
+  const statsBox=document.getElementById('victoryStatsBox');
+  statsBox.innerHTML=`
+    <div><span>Tempo totale</span><span>${fmtTime(game.time)}</span></div>
+    <div><span>Livello raggiunto</span><span>${game.player.level}</span></div>
+    <div><span>Nemici uccisi</span><span>${game.kills}</span></div>
+    <div><span>Armi raccolte</span><span>${game.player.weapons.length}</span></div>
+  `;
+  document.getElementById('victoryScreen').classList.remove('hidden');
 }
 
 function buildCharGrid(){
@@ -2566,6 +2619,12 @@ document.getElementById('confirmCharBtn').onclick=()=>{
 document.getElementById('restartBtn').onclick=()=>{
   AudioSys.sfx.click();
   document.getElementById('gameOverScreen').classList.add('hidden');
+  buildCharGrid();
+  document.getElementById('characterScreen').classList.remove('hidden');
+};
+document.getElementById('victoryRestartBtn').onclick=()=>{
+  AudioSys.sfx.click();
+  document.getElementById('victoryScreen').classList.add('hidden');
   buildCharGrid();
   document.getElementById('characterScreen').classList.remove('hidden');
 };
