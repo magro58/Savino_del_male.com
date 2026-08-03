@@ -82,11 +82,18 @@
   .card .desc{font-size:11px;color:#aaa;margin-top:4px;min-height:44px;}
   .card .rarity{font-size:10px;font-weight:bold;margin-top:6px;text-transform:uppercase;letter-spacing:1px;}
 
-  /* character select */
-  #charGrid{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:1240px;margin:16px auto;}
-  .charCard{width:200px;background:#161616;border:2px solid #3a3a3a;border-radius:12px;overflow:hidden;cursor:pointer;text-align:left;transition:transform .12s,box-shadow .12s;}
-  .charCard:hover{transform:translateY(-4px);}
-  .charCard.selected{box-shadow:0 0 0 3px #fff, 0 6px 18px #0008;transform:translateY(-4px);}
+  /* character select — single-view carousel (same on desktop and mobile) */
+  #charCarousel{display:flex;align-items:center;justify-content:center;gap:10px;margin:16px auto 6px;width:100%;max-width:600px;}
+  .carouselArrow{width:44px;height:44px;min-width:44px;border-radius:50%;background:#1e1e1e;border:2px solid #444;color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;flex-shrink:0;}
+  .carouselArrow:hover{background:#2a2a2a;border-color:#666;}
+  #charViewport{width:220px;overflow:visible;display:flex;justify-content:center;}
+  #charDots{display:flex;gap:7px;justify-content:center;margin-bottom:14px;}
+  .charDot{width:9px;height:9px;border-radius:50%;background:#3a3a3a;cursor:pointer;transition:background .15s,transform .15s;}
+  .charDot.active{background:#fff;transform:scale(1.25);}
+  #charGrid{display:flex;gap:14px;justify-content:center;}
+  .charCard{width:200px;background:#161616;border:2px solid #3a3a3a;border-radius:12px;overflow:hidden;cursor:pointer;text-align:left;animation:charPop .18s ease-out;}
+  @keyframes charPop{0%{opacity:0;transform:scale(0.92);}100%{opacity:1;transform:scale(1);}}
+  .charCard.selected{box-shadow:0 0 0 3px #fff, 0 6px 18px #0008;}
   .charCard .chHead{padding:10px 12px 6px;}
   .charCard .chName{font-weight:bold;font-size:15px;}
   .charCard .chSub{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.5px;}
@@ -197,40 +204,44 @@
   <div id="startScreen" class="screen">
     <div id="zombiesBG"></div>
     <h1 class="title">IT DEL MALE</h1>
-    <div class="subtitle">Office Zombie Survivor</div>
-    <p class="flavor">L'open space è caduto. I tuoi colleghi si sono trasformati in orde di dipendenti-zombie affamati di straordinari.
+    <div class="subtitle" id="txt_subtitle_start">Office Zombie Survivor</div>
+    <p class="flavor" id="txt_flavor_start">L'open space è caduto. I tuoi colleghi si sono trasformati in orde di dipendenti-zombie affamati di straordinari.
     Raccogli armi d'ufficio dal loot, sali di livello e sopravvivi alle ondate. Ogni tanto un Manager verrà a chiedere il resoconto del progetto... di persona.</p>
     <div class="menuBtnRow">
       <button class="bigBtn clickable" id="startBtn">🎮 GIOCA</button>
       <button class="bigBtn clickable menuSecondary" id="settingsBtnStart">⚙️ IMPOSTAZIONI</button>
       <button class="bigBtn clickable menuSecondary" id="trophyBtnStart">🏆 TROFEI</button>
     </div>
-    <div class="smallHint">Muoviti con WASD / Frecce — tieni premuto il CLICK (o il pulsante 🎯 su mobile) per attaccare — le armi si consumano con l'uso, raccogli munizioni 📦 per ricaricarle — ESC per la pausa</div>
+    <div class="smallHint" id="txt_hint_start">Muoviti con WASD / Frecce — tieni premuto il CLICK (o il pulsante 🎯 su mobile) per attaccare — le armi si consumano con l'uso, raccogli munizioni 📦 per ricaricarle — ESC per la pausa</div>
   </div>
 
   <!-- Settings screen -->
   <div id="settingsScreen" class="screen hidden">
-    <h1 class="title" style="font-size:36px;">IMPOSTAZIONI</h1>
+    <h1 class="title" id="txt_settings_title" style="font-size:36px;">IMPOSTAZIONI</h1>
     <div id="settingsBox">
       <div class="setRow">
-        <label>🔊 Volume Musica</label>
+        <label id="txt_label_music_vol">🔊 Volume Musica</label>
         <input type="range" id="musicVolRange" min="0" max="100" value="60" class="clickable">
         <span id="musicVolVal">60%</span>
       </div>
       <div class="setRow">
-        <label>🔉 Volume Effetti</label>
+        <label id="txt_label_sfx_vol">🔉 Volume Effetti</label>
         <input type="range" id="sfxVolRange" min="0" max="100" value="80" class="clickable">
         <span id="sfxVolVal">80%</span>
       </div>
       <div class="setRow">
-        <label>🔇 Disattiva Audio</label>
+        <label id="txt_label_mute">🔇 Disattiva Audio</label>
         <input type="checkbox" id="muteCheck" class="clickable" style="width:20px;height:20px;">
         <span></span>
       </div>
       <div class="setRow">
-        <label>📳 Vibrazione Schermo</label>
+        <label id="txt_label_shake">📳 Vibrazione Schermo</label>
         <input type="checkbox" id="shakeCheck" class="clickable" style="width:20px;height:20px;" checked>
         <span></span>
+      </div>
+      <div class="setRow">
+        <label id="txt_label_language">🌐 Lingua</label>
+        <select id="langSelect" class="clickable"></select>
       </div>
     </div>
     <button class="bigBtn clickable" id="settingsBackBtn">INDIETRO</button>
@@ -238,59 +249,64 @@
 
   <!-- Trophy screen -->
   <div id="trophyScreen" class="screen hidden">
-    <h1 class="title" style="font-size:min(6vw,36px);">🏆 TROFEI</h1>
+    <h1 class="title" id="txt_trophy_title" style="font-size:min(6vw,36px);">🏆 TROFEI</h1>
     <div id="trophyGrid" class="trophyGrid"></div>
     <button class="bigBtn clickable menuSecondary" id="trophyBackBtn" style="margin-top:20px;">INDIETRO</button>
   </div>
 
   <!-- Difficulty select screen -->
   <div id="difficultyScreen" class="screen hidden">
-    <h1 class="title" style="font-size:min(6vw,36px);">SCEGLI LA DIFFICOLTÀ</h1>
+    <h1 class="title" id="txt_diff_title" style="font-size:min(6vw,36px);">SCEGLI LA DIFFICOLTÀ</h1>
     <div id="diffGrid" class="diffGrid"></div>
   </div>
 
   <!-- Character select screen -->
   <div id="characterScreen" class="screen hidden" style="justify-content:flex-start;overflow-y:auto;padding-top:26px;">
-    <h1 class="title" style="font-size:min(6vw,36px);">SCEGLI IL TUO IMPIEGATO</h1>
-    <div id="charGrid"></div>
-    <button class="bigBtn clickable" id="confirmCharBtn" disabled style="opacity:0.4;margin-bottom:30px;">CONFERMA SCELTA</button>
+    <h1 class="title" id="txt_char_title" style="font-size:min(6vw,36px);">SCEGLI IL TUO IMPIEGATO</h1>
+    <div id="charCarousel">
+      <button class="carouselArrow clickable" id="charPrevBtn" aria-label="Precedente">‹</button>
+      <div id="charViewport"><div id="charGrid"></div></div>
+      <button class="carouselArrow clickable" id="charNextBtn" aria-label="Successivo">›</button>
+    </div>
+    <div id="charDots"></div>
+    <button class="bigBtn clickable" id="confirmCharBtn" style="margin-bottom:30px;">CONFERMA SCELTA</button>
   </div>
 
   <!-- Level up screen -->
   <div id="levelUpScreen" class="screen hidden">
-    <h2>LEVEL UP!</h2>
-    <div style="color:#999;font-size:13px;">Scegli un potenziamento</div>
+    <h2 id="txt_levelup_title">LEVEL UP!</h2>
+    <div id="txt_levelup_sub" style="color:#999;font-size:13px;">Scegli un potenziamento</div>
     <div id="cards"></div>
   </div>
 
   <!-- legendary weapon swap -->
   <div id="weaponSwapScreen" class="screen hidden">
-    <h2>⭐ ARMA LEGGENDARIA! ⭐</h2>
+    <h2 id="txt_swap_title">⭐ ARMA LEGGENDARIA! ⭐</h2>
     <div id="swapNewWeapon" style="color:#e6b800;font-size:14px;margin-bottom:6px;"></div>
-    <div style="color:#999;font-size:13px;">Inventario pieno: scegli quale arma sostituire</div>
+    <div id="txt_swap_sub" style="color:#999;font-size:13px;">Inventario pieno: scegli quale arma sostituire</div>
     <div id="swapCards"></div>
     <button class="clickable" id="swapDiscardBtn" style="margin-top:14px;background:none;border:1px solid #666;color:#aaa;padding:8px 18px;border-radius:8px;font-size:13px;">Scarta (converti in EXP)</button>
   </div>
 
   <!-- pause -->
   <div id="pauseScreen" class="screen hidden">
-    <h1 class="title" style="font-size:40px;">PAUSA</h1>
+    <h1 class="title" id="txt_pause_title" style="font-size:40px;">PAUSA</h1>
     <button class="bigBtn clickable" id="resumeBtn">RIPRENDI</button>
     <button class="bigBtn clickable" id="settingsBtnPause" style="margin-top:12px;background:linear-gradient(180deg,#3a3a3a,#1e1e1e);border-color:#666;">⚙️ IMPOSTAZIONI</button>
   </div>
 
   <!-- Game over -->
   <div id="gameOverScreen" class="screen hidden">
-    <h1 class="title">LICENZIATO</h1>
-    <div class="subtitle" style="color:#c0392b;">Sei stato consumato dall'ufficio</div>
+    <h1 class="title" id="txt_gameover_title">LICENZIATO</h1>
+    <div class="subtitle" id="txt_gameover_sub" style="color:#c0392b;">Sei stato consumato dall'ufficio</div>
     <div id="statsBox"></div>
     <button class="bigBtn clickable" id="restartBtn">RIPROVA IL TURNO</button>
   </div>
 
   <!-- Victory -->
   <div id="victoryScreen" class="screen hidden">
-    <h1 class="title" style="color:#ffd700;">VITTORIA!</h1>
-    <div class="subtitle" style="color:#2ecc71;">Hai licenziato il CEO. L'ufficio è salvo.</div>
+    <h1 class="title" id="txt_victory_title" style="color:#ffd700;">VITTORIA!</h1>
+    <div class="subtitle" id="txt_victory_sub" style="color:#2ecc71;">Hai licenziato il CEO. L'ufficio è salvo.</div>
     <div id="victoryStatsBox"></div>
     <div id="victoryUnlock" class="hidden" style="color:#ff5b9e;font-weight:bold;margin-top:10px;max-width:420px;text-align:center;">🔓 Modalità ESTREMA sbloccata!</div>
     <button class="bigBtn clickable" id="victoryRestartBtn">GIOCA ANCORA</button>
@@ -802,12 +818,413 @@ function loadProgress(){
 }
 let PROGRESS = loadProgress();
 function saveProgress(){ try{ localStorage.setItem('sdm_progress', JSON.stringify(PROGRESS)); }catch(e){} }
+
+/* ---------------------------- Language / i18n ---------------------------- */
+const LANGUAGES = {it:'Italiano', en:'English', es:'Español', fr:'Français', de:'Deutsch'};
+function loadLang(){
+  try{ return localStorage.getItem('sdm_lang') || 'it'; }catch(e){ return 'it'; }
+}
+let currentLang = loadLang();
+function saveLang(){ try{ localStorage.setItem('sdm_lang', currentLang); }catch(e){} }
+
+const I18N_UI = {
+  en:{
+    subtitle_start:"Office Zombie Survivor",
+    flavor_start:"The open space has fallen. Your coworkers have turned into hordes of overtime-starved zombie employees. Loot office weapons, level up, and survive the waves. Every so often a Manager will come to ask for the project status report... in person.",
+    btn_play:"🎮 PLAY", btn_settings:"⚙️ SETTINGS", btn_trophies:"🏆 TROPHIES",
+    hint_start:"Move with WASD / Arrows — hold CLICK (or the 🎯 button on mobile) to attack — weapons wear out with use, collect ammo 📦 to reload them — ESC to pause",
+    settings_title:"SETTINGS", label_music_vol:"🔊 Music Volume", label_sfx_vol:"🔉 SFX Volume",
+    label_mute:"🔇 Mute Audio", label_shake:"📳 Screen Shake", label_language:"🌐 Language",
+    btn_back:"BACK",
+    trophy_title:"🏆 TROPHIES",
+    diff_title:"CHOOSE DIFFICULTY", diff_locked_desc:"Unlock by beating the CEO on Hard.",
+    char_title:"CHOOSE YOUR EMPLOYEE", btn_confirm:"CONFIRM CHOICE",
+    stat_hp:"HEALTH", stat_spd:"SPEED", stat_dmg:"DAMAGE", stat_area:"AREA",
+    box_weapon:"STARTING WEAPON", box_passive:"PASSIVE ABILITY",
+    levelup_title:"LEVEL UP!", levelup_sub:"Choose an upgrade",
+    card_upgrade_desc:"Upgrade this weapon", card_evolve_desc:"⭐ Will evolve into {name}!", label_upgrade:"Upgrade",
+    pause_title:"PAUSE", btn_resume:"RESUME",
+    gameover_title:"FIRED", gameover_sub:"You were consumed by the office", btn_retry:"RETRY SHIFT",
+    stats_time_survived:"Time survived", stats_time_total:"Total time", stats_level:"Level reached",
+    stats_kills:"Enemies killed", stats_weapons:"Weapons collected", stats_stage:"Level reached (boss)",
+    victory_title:"VICTORY!", victory_sub:"You fired the CEO. The office is safe.",
+    victory_unlock:"🔓 EXTREME mode unlocked!", btn_play_again:"PLAY AGAIN",
+    swap_title:"⭐ LEGENDARY WEAPON! ⭐", swap_sub:"Inventory full: choose which weapon to replace",
+    swap_discard:"Discard (convert to EXP)", swap_new_found:"{name} found!",
+    kick_hint:"SPACE: kick",
+    hud_wave:"Level {n}/{total} — next boss at Lv.{lvl}", hud_kills:"Kills: {n}",
+    toast_trophy_unlocked:"🏆 Trophy unlocked: {name}",
+    toast_weapon_broke:"💔 {name} broke!",
+    toast_boss_arrived:"⚠️ {name} has arrived! ⚠️",
+    toast_boss_defeated:"✅ {name} defeated! +Health, +EXP",
+    toast_backup_shield:"🛡️ Backup activated! Temporary shield",
+    toast_delega_mortale:"👤 Deadly Delegation: assistant summoned!",
+    toast_analytical_mind:"🧠 Analytical Mind: +1% damage",
+    toast_evolution:"✨ EVOLUTION: {name}! ✨",
+    toast_weapon_upgraded:"{name} upgraded! Lv.{level}",
+    toast_stat_upgraded:"{name}!",
+    toast_kick:"🦵 Emergency kick!",
+    toast_copier_clone:"Copier: clone summoned!",
+    toast_senior_ready:"🎖️ Senior Colleague ready: automatic intervention below 32% HP!",
+    toast_team_pause:"👥 Team Break! 4 colleagues protecting you!",
+    toast_senior_trigger:"🎖️ Senior Colleague intervenes: emergency heal + devastating strike!",
+    toast_ceo_enrage:"😡 THE CEO GETS ANGRY! 😡",
+    toast_director_reinforcements:"The Director calls for reinforcements!",
+    toast_cto_disable:"The CTO temporarily disables your weapons!",
+    toast_chest_opened:"Loot chest opened!",
+    toast_weapon_repaired:"🔧 {name} reloaded/repaired!",
+    toast_new_weapon:"🎯 New weapon: {name}",
+    toast_inventory_full_xp:"Inventory full! {name} converted to EXP",
+    toast_weapon_swapped:"🎯 {old} replaced with {new}!",
+    toast_ammo_collected:"📦 Ammo collected!",
+    toast_ammo_no_weapon:"📦 Ammo (no weapon to reload)",
+  },
+  es:{
+    subtitle_start:"Office Zombie Survivor",
+    flavor_start:"La oficina abierta ha caído. Tus compañeros se han convertido en hordas de empleados zombis hambrientos de horas extra. Recoge armas de oficina, sube de nivel y sobrevive a las oleadas. De vez en cuando un Gerente vendrá a pedir el informe del proyecto... en persona.",
+    btn_play:"🎮 JUGAR", btn_settings:"⚙️ AJUSTES", btn_trophies:"🏆 TROFEOS",
+    hint_start:"Muévete con WASD / Flechas — mantén pulsado el CLIC (o el botón 🎯 en móvil) para atacar — las armas se desgastan con el uso, recoge munición 📦 para recargarlas — ESC para pausar",
+    settings_title:"AJUSTES", label_music_vol:"🔊 Volumen Música", label_sfx_vol:"🔉 Volumen Efectos",
+    label_mute:"🔇 Silenciar Audio", label_shake:"📳 Vibración de Pantalla", label_language:"🌐 Idioma",
+    btn_back:"ATRÁS",
+    trophy_title:"🏆 TROFEOS",
+    diff_title:"ELIGE LA DIFICULTAD", diff_locked_desc:"Desbloquea venciendo al CEO en Difícil.",
+    char_title:"ELIGE A TU EMPLEADO", btn_confirm:"CONFIRMAR ELECCIÓN",
+    stat_hp:"SALUD", stat_spd:"VELOCIDAD", stat_dmg:"DAÑO", stat_area:"ÁREA",
+    box_weapon:"ARMA INICIAL", box_passive:"HABILIDAD PASIVA",
+    levelup_title:"¡SUBIDA DE NIVEL!", levelup_sub:"Elige una mejora",
+    card_upgrade_desc:"Mejora esta arma", card_evolve_desc:"⭐ ¡Evolucionará a {name}!", label_upgrade:"Mejora",
+    pause_title:"PAUSA", btn_resume:"CONTINUAR",
+    gameover_title:"DESPEDIDO", gameover_sub:"Fuiste consumido por la oficina", btn_retry:"REINTENTAR TURNO",
+    stats_time_survived:"Tiempo sobrevivido", stats_time_total:"Tiempo total", stats_level:"Nivel alcanzado",
+    stats_kills:"Enemigos eliminados", stats_weapons:"Armas recogidas", stats_stage:"Nivel alcanzado (boss)",
+    victory_title:"¡VICTORIA!", victory_sub:"Despediste al CEO. La oficina está a salvo.",
+    victory_unlock:"🔓 ¡Modo EXTREMO desbloqueado!", btn_play_again:"JUGAR OTRA VEZ",
+    swap_title:"⭐ ¡ARMA LEGENDARIA! ⭐", swap_sub:"Inventario lleno: elige qué arma sustituir",
+    swap_discard:"Descartar (convertir en EXP)", swap_new_found:"¡{name} encontrada!",
+    kick_hint:"ESPACIO: patada",
+    hud_wave:"Nivel {n}/{total} — próximo boss en Nv.{lvl}", hud_kills:"Bajas: {n}",
+    toast_trophy_unlocked:"🏆 Trofeo desbloqueado: {name}",
+    toast_weapon_broke:"💔 ¡{name} se rompió!",
+    toast_boss_arrived:"⚠️ ¡{name} ha llegado! ⚠️",
+    toast_boss_defeated:"✅ ¡{name} derrotado! +Vida, +EXP",
+    toast_backup_shield:"🛡️ ¡Backup activado! Escudo temporal",
+    toast_delega_mortale:"👤 ¡Delegación Mortal: asistente invocado!",
+    toast_analytical_mind:"🧠 Mente Analítica: +1% de daño",
+    toast_evolution:"✨ ¡EVOLUCIÓN: {name}! ✨",
+    toast_weapon_upgraded:"¡{name} mejorada! Nv.{level}",
+    toast_stat_upgraded:"¡{name}!",
+    toast_kick:"🦵 ¡Patada de emergencia!",
+    toast_copier_clone:"¡Fotocopiadora: clon invocado!",
+    toast_senior_ready:"🎖️ ¡Colega Senior listo: intervención automática por debajo del 32% HP!",
+    toast_team_pause:"👥 ¡Pausa de Equipo! ¡4 colegas te protegen!",
+    toast_senior_trigger:"🎖️ ¡El Colega Senior interviene: curación de emergencia + golpe devastador!",
+    toast_ceo_enrage:"😡 ¡EL CEO SE ENFADA! 😡",
+    toast_director_reinforcements:"¡El Director pide refuerzos!",
+    toast_cto_disable:"¡El CTO desactiva temporalmente tus armas!",
+    toast_chest_opened:"¡Cofre del botín abierto!",
+    toast_weapon_repaired:"🔧 ¡{name} recargada/reparada!",
+    toast_new_weapon:"🎯 Nueva arma: {name}",
+    toast_inventory_full_xp:"¡Inventario lleno! {name} convertida en EXP",
+    toast_weapon_swapped:"🎯 ¡{old} sustituida por {new}!",
+    toast_ammo_collected:"📦 ¡Munición recogida!",
+    toast_ammo_no_weapon:"📦 Munición (ninguna arma que recargar)",
+  },
+  fr:{
+    subtitle_start:"Office Zombie Survivor",
+    flavor_start:"L'open space est tombé. Vos collègues se sont transformés en hordes d'employés zombies affamés d'heures supplémentaires. Récupérez des armes de bureau, montez de niveau et survivez aux vagues. De temps en temps, un Manager viendra demander le rapport du projet... en personne.",
+    btn_play:"🎮 JOUER", btn_settings:"⚙️ PARAMÈTRES", btn_trophies:"🏆 TROPHÉES",
+    hint_start:"Déplacez-vous avec WASD / Flèches — maintenez le CLIC (ou le bouton 🎯 sur mobile) pour attaquer — les armes s'usent à l'usage, ramassez des munitions 📦 pour les recharger — ÉCHAP pour la pause",
+    settings_title:"PARAMÈTRES", label_music_vol:"🔊 Volume Musique", label_sfx_vol:"🔉 Volume Effets",
+    label_mute:"🔇 Couper le son", label_shake:"📳 Tremblement d'écran", label_language:"🌐 Langue",
+    btn_back:"RETOUR",
+    trophy_title:"🏆 TROPHÉES",
+    diff_title:"CHOISIR LA DIFFICULTÉ", diff_locked_desc:"Débloquez en battant le PDG en Difficile.",
+    char_title:"CHOISIS TON EMPLOYÉ", btn_confirm:"CONFIRMER LE CHOIX",
+    stat_hp:"SANTÉ", stat_spd:"VITESSE", stat_dmg:"DÉGÂTS", stat_area:"ZONE",
+    box_weapon:"ARME DE DÉPART", box_passive:"CAPACITÉ PASSIVE",
+    levelup_title:"NIVEAU SUPÉRIEUR !", levelup_sub:"Choisis une amélioration",
+    card_upgrade_desc:"Améliore cette arme", card_evolve_desc:"⭐ Évoluera en {name} !", label_upgrade:"Amélioration",
+    pause_title:"PAUSE", btn_resume:"REPRENDRE",
+    gameover_title:"LICENCIÉ", gameover_sub:"Tu as été consumé par le bureau", btn_retry:"RECOMMENCER",
+    stats_time_survived:"Temps de survie", stats_time_total:"Temps total", stats_level:"Niveau atteint",
+    stats_kills:"Ennemis tués", stats_weapons:"Armes récupérées", stats_stage:"Niveau atteint (boss)",
+    victory_title:"VICTOIRE !", victory_sub:"Tu as viré le PDG. Le bureau est sauvé.",
+    victory_unlock:"🔓 Mode EXTRÊME débloqué !", btn_play_again:"REJOUER",
+    swap_title:"⭐ ARME LÉGENDAIRE ! ⭐", swap_sub:"Inventaire plein : choisis quelle arme remplacer",
+    swap_discard:"Jeter (convertir en EXP)", swap_new_found:"{name} trouvée !",
+    kick_hint:"ESPACE : coup de pied",
+    hud_wave:"Niveau {n}/{total} — prochain boss au Niv.{lvl}", hud_kills:"Éliminations : {n}",
+    toast_trophy_unlocked:"🏆 Trophée débloqué : {name}",
+    toast_weapon_broke:"💔 {name} s'est cassée !",
+    toast_boss_arrived:"⚠️ {name} est arrivé(e) ! ⚠️",
+    toast_boss_defeated:"✅ {name} vaincu(e) ! +Vie, +EXP",
+    toast_backup_shield:"🛡️ Sauvegarde activée ! Bouclier temporaire",
+    toast_delega_mortale:"👤 Délégation Mortelle : assistant invoqué !",
+    toast_analytical_mind:"🧠 Esprit Analytique : +1% de dégâts",
+    toast_evolution:"✨ ÉVOLUTION : {name} ! ✨",
+    toast_weapon_upgraded:"{name} améliorée ! Niv.{level}",
+    toast_stat_upgraded:"{name} !",
+    toast_kick:"🦵 Coup de pied d'urgence !",
+    toast_copier_clone:"Photocopieuse : clone invoqué !",
+    toast_senior_ready:"🎖️ Collègue Senior prêt : intervention automatique sous 32% de vie !",
+    toast_team_pause:"👥 Pause d'Équipe ! 4 collègues te protègent !",
+    toast_senior_trigger:"🎖️ Le Collègue Senior intervient : soin d'urgence + coup dévastateur !",
+    toast_ceo_enrage:"😡 LE PDG SE MET EN COLÈRE ! 😡",
+    toast_director_reinforcements:"Le Directeur appelle des renforts !",
+    toast_cto_disable:"Le CTO désactive temporairement tes armes !",
+    toast_chest_opened:"Coffre de butin ouvert !",
+    toast_weapon_repaired:"🔧 {name} rechargée/réparée !",
+    toast_new_weapon:"🎯 Nouvelle arme : {name}",
+    toast_inventory_full_xp:"Inventaire plein ! {name} convertie en EXP",
+    toast_weapon_swapped:"🎯 {old} remplacée par {new} !",
+    toast_ammo_collected:"📦 Munitions récupérées !",
+    toast_ammo_no_weapon:"📦 Munitions (aucune arme à recharger)",
+  },
+  de:{
+    subtitle_start:"Office Zombie Survivor",
+    flavor_start:"Das Großraumbüro ist gefallen. Deine Kollegen haben sich in Horden überstundenhungriger Zombie-Angestellter verwandelt. Sammle Büro-Waffen, steige im Level auf und überlebe die Wellen. Hin und wieder kommt ein Manager, um persönlich nach dem Projektstatus zu fragen.",
+    btn_play:"🎮 SPIELEN", btn_settings:"⚙️ EINSTELLUNGEN", btn_trophies:"🏆 TROPHÄEN",
+    hint_start:"Bewege dich mit WASD / Pfeiltasten — halte die KLICK-Taste (oder den 🎯-Button auf Mobilgeräten) zum Angreifen gedrückt — Waffen nutzen sich mit der Zeit ab, sammle Munition 📦 zum Nachladen — ESC für Pause",
+    settings_title:"EINSTELLUNGEN", label_music_vol:"🔊 Musiklautstärke", label_sfx_vol:"🔉 Effektlautstärke",
+    label_mute:"🔇 Ton stumm schalten", label_shake:"📳 Bildschirm-Erschütterung", label_language:"🌐 Sprache",
+    btn_back:"ZURÜCK",
+    trophy_title:"🏆 TROPHÄEN",
+    diff_title:"SCHWIERIGKEIT WÄHLEN", diff_locked_desc:"Freischalten durch Sieg über den CEO auf Schwer.",
+    char_title:"WÄHLE DEINEN ANGESTELLTEN", btn_confirm:"AUSWAHL BESTÄTIGEN",
+    stat_hp:"LEBEN", stat_spd:"TEMPO", stat_dmg:"SCHADEN", stat_area:"BEREICH",
+    box_weapon:"STARTWAFFE", box_passive:"PASSIVE FÄHIGKEIT",
+    levelup_title:"LEVEL UP!", levelup_sub:"Wähle ein Upgrade",
+    card_upgrade_desc:"Diese Waffe verbessern", card_evolve_desc:"⭐ Wird sich zu {name} entwickeln!", label_upgrade:"Verbesserung",
+    pause_title:"PAUSE", btn_resume:"FORTSETZEN",
+    gameover_title:"GEKÜNDIGT", gameover_sub:"Du wurdest vom Büro verschlungen", btn_retry:"SCHICHT WIEDERHOLEN",
+    stats_time_survived:"Überlebte Zeit", stats_time_total:"Gesamtzeit", stats_level:"Erreichtes Level",
+    stats_kills:"Getötete Gegner", stats_weapons:"Gesammelte Waffen", stats_stage:"Erreichtes Level (Boss)",
+    victory_title:"SIEG!", victory_sub:"Du hast den CEO gefeuert. Das Büro ist gerettet.",
+    victory_unlock:"🔓 EXTREM-Modus freigeschaltet!", btn_play_again:"NOCHMAL SPIELEN",
+    swap_title:"⭐ LEGENDÄRE WAFFE! ⭐", swap_sub:"Inventar voll: wähle, welche Waffe ersetzt werden soll",
+    swap_discard:"Verwerfen (in EXP umwandeln)", swap_new_found:"{name} gefunden!",
+    kick_hint:"LEERTASTE: Tritt",
+    hud_wave:"Level {n}/{total} — nächster Boss bei Lv.{lvl}", hud_kills:"Abschüsse: {n}",
+    toast_trophy_unlocked:"🏆 Trophäe freigeschaltet: {name}",
+    toast_weapon_broke:"💔 {name} ist kaputtgegangen!",
+    toast_boss_arrived:"⚠️ {name} ist angekommen! ⚠️",
+    toast_boss_defeated:"✅ {name} besiegt! +Leben, +EXP",
+    toast_backup_shield:"🛡️ Backup aktiviert! Temporäres Schild",
+    toast_delega_mortale:"👤 Tödliche Delegation: Assistent beschworen!",
+    toast_analytical_mind:"🧠 Analytischer Verstand: +1% Schaden",
+    toast_evolution:"✨ EVOLUTION: {name}! ✨",
+    toast_weapon_upgraded:"{name} verbessert! Lv.{level}",
+    toast_stat_upgraded:"{name}!",
+    toast_kick:"🦵 Nottritt!",
+    toast_copier_clone:"Kopierer: Klon beschworen!",
+    toast_senior_ready:"🎖️ Senior-Kollege bereit: automatischer Einsatz unter 32% HP!",
+    toast_team_pause:"👥 Teampause! 4 Kollegen beschützen dich!",
+    toast_senior_trigger:"🎖️ Der Senior-Kollege greift ein: Nothilfe + verheerender Schlag!",
+    toast_ceo_enrage:"😡 DER CEO WIRD WÜTEND! 😡",
+    toast_director_reinforcements:"Der Direktor ruft Verstärkung!",
+    toast_cto_disable:"Der CTO deaktiviert vorübergehend deine Waffen!",
+    toast_chest_opened:"Beutetruhe geöffnet!",
+    toast_weapon_repaired:"🔧 {name} nachgeladen/repariert!",
+    toast_new_weapon:"🎯 Neue Waffe: {name}",
+    toast_inventory_full_xp:"Inventar voll! {name} in EXP umgewandelt",
+    toast_weapon_swapped:"🎯 {old} durch {new} ersetzt!",
+    toast_ammo_collected:"📦 Munition gesammelt!",
+    toast_ammo_no_weapon:"📦 Munition (keine Waffe zum Nachladen)",
+  },
+};
+const I18N_UI_IT_FALLBACK={
+  subtitle_start:"Office Zombie Survivor",
+  flavor_start:"L'open space è caduto. I tuoi colleghi si sono trasformati in orde di dipendenti-zombie affamati di straordinari. Raccogli armi d'ufficio dal loot, sali di livello e sopravvivi alle ondate. Ogni tanto un Manager verrà a chiedere il resoconto del progetto... di persona.",
+  btn_play:"🎮 GIOCA", btn_settings:"⚙️ IMPOSTAZIONI", btn_trophies:"🏆 TROFEI",
+  hint_start:"Muoviti con WASD / Frecce — tieni premuto il CLICK (o il pulsante 🎯 su mobile) per attaccare — le armi si consumano con l'uso, raccogli munizioni 📦 per ricaricarle — ESC per la pausa",
+  settings_title:"IMPOSTAZIONI", label_music_vol:"🔊 Volume Musica", label_sfx_vol:"🔉 Volume Effetti",
+  label_mute:"🔇 Disattiva Audio", label_shake:"📳 Vibrazione Schermo", label_language:"🌐 Lingua",
+  btn_back:"INDIETRO",
+  trophy_title:"🏆 TROFEI",
+  diff_title:"SCEGLI LA DIFFICOLTÀ", diff_locked_desc:"Sblocca battendo il CEO in Difficile.",
+  char_title:"SCEGLI IL TUO IMPIEGATO", btn_confirm:"CONFERMA SCELTA",
+  stat_hp:"SALUTE", stat_spd:"VELOCITÀ", stat_dmg:"DANNO", stat_area:"AREA",
+  box_weapon:"ARMA INIZIALE", box_passive:"ABILITÀ PASSIVA",
+  levelup_title:"LEVEL UP!", levelup_sub:"Scegli un potenziamento",
+  card_upgrade_desc:"Potenzia questa arma", card_evolve_desc:"⭐ Si evolverà in {name}!", label_upgrade:"Potenziamento",
+  pause_title:"PAUSA", btn_resume:"RIPRENDI",
+  gameover_title:"LICENZIATO", gameover_sub:"Sei stato consumato dall'ufficio", btn_retry:"RIPROVA IL TURNO",
+  stats_time_survived:"Tempo sopravvissuto", stats_time_total:"Tempo totale", stats_level:"Livello raggiunto",
+  stats_kills:"Nemici uccisi", stats_weapons:"Armi raccolte", stats_stage:"Livello raggiunto (boss)",
+  victory_title:"VITTORIA!", victory_sub:"Hai licenziato il CEO. L'ufficio è salvo.",
+  victory_unlock:"🔓 Modalità ESTREMA sbloccata!", btn_play_again:"GIOCA ANCORA",
+  swap_title:"⭐ ARMA LEGGENDARIA! ⭐", swap_sub:"Inventario pieno: scegli quale arma sostituire",
+  swap_discard:"Scarta (converti in EXP)", swap_new_found:"{name} trovata!",
+  kick_hint:"SPAZIO: calcio",
+  hud_wave:"Livello {n}/{total} — prossimo boss a Lv.{lvl}", hud_kills:"Uccisioni: {n}",
+  toast_trophy_unlocked:"🏆 Trofeo sbloccato: {name}",
+  toast_weapon_broke:"💔 {name} si è rotta/o!",
+  toast_boss_arrived:"⚠️ {name} è arrivato/a! ⚠️",
+  toast_boss_defeated:"✅ {name} sconfitto/a! +Vita, +EXP",
+  toast_backup_shield:"🛡️ Backup attivato! Scudo temporaneo",
+  toast_delega_mortale:"👤 Delega Mortale: assistente evocato!",
+  toast_analytical_mind:"🧠 Mente Analitica: +1% danno",
+  toast_evolution:"✨ EVOLUZIONE: {name}! ✨",
+  toast_weapon_upgraded:"{name} potenziata! Lv.{level}",
+  toast_stat_upgraded:"{name}!",
+  toast_kick:"🦵 Calcio d'emergenza!",
+  toast_copier_clone:"Fotocopiatrice: clone evocato!",
+  toast_senior_ready:"🎖️ Collega Senior pronto: intervento automatico sotto il 32% HP!",
+  toast_team_pause:"👥 Pausa Squadra! 4 colleghi ti proteggono!",
+  toast_senior_trigger:"🎖️ Collega Senior interviene: cura d'emergenza + colpo devastante!",
+  toast_ceo_enrage:"😡 IL CEO SI ARRABBIA! 😡",
+  toast_director_reinforcements:"Il Direttore chiama rinforzi!",
+  toast_cto_disable:"Il CTO disattiva temporaneamente le tue armi!",
+  toast_chest_opened:"Cassa del bottino aperta!",
+  toast_weapon_repaired:"🔧 {name} ricaricata/riparata!",
+  toast_new_weapon:"🎯 Nuova arma: {name}",
+  toast_inventory_full_xp:"Inventario pieno! {name} convertita in EXP",
+  toast_weapon_swapped:"🎯 {old} sostituita con {new}!",
+  toast_ammo_collected:"📦 Munizioni raccolte!",
+  toast_ammo_no_weapon:"📦 Munizioni (nessuna arma da ricaricare)",
+};
+function t(key, vars){
+  const dict = currentLang==='it' ? I18N_UI_IT_FALLBACK : (I18N_UI[currentLang]||I18N_UI_IT_FALLBACK);
+  let s = dict[key] || I18N_UI_IT_FALLBACK[key] || key;
+  if(vars) for(const k in vars) s=s.split('{'+k+'}').join(vars[k]);
+  return s;
+}
+function setText(id,key){ const el=document.getElementById(id); if(el) el.textContent=t(key); }
+function applyStaticTranslations(){
+  setText('txt_subtitle_start','subtitle_start');
+  setText('txt_flavor_start','flavor_start');
+  setText('txt_hint_start','hint_start');
+  setText('startBtn','btn_play');
+  setText('settingsBtnStart','btn_settings');
+  setText('trophyBtnStart','btn_trophies');
+  setText('txt_settings_title','settings_title');
+  setText('txt_label_music_vol','label_music_vol');
+  setText('txt_label_sfx_vol','label_sfx_vol');
+  setText('txt_label_mute','label_mute');
+  setText('txt_label_shake','label_shake');
+  setText('txt_label_language','label_language');
+  setText('settingsBackBtn','btn_back');
+  setText('txt_trophy_title','trophy_title');
+  setText('trophyBackBtn','btn_back');
+  setText('txt_diff_title','diff_title');
+  setText('txt_char_title','char_title');
+  setText('confirmCharBtn','btn_confirm');
+  setText('txt_levelup_title','levelup_title');
+  setText('txt_levelup_sub','levelup_sub');
+  setText('txt_swap_title','swap_title');
+  setText('txt_swap_sub','swap_sub');
+  setText('swapDiscardBtn','swap_discard');
+  setText('txt_pause_title','pause_title');
+  setText('resumeBtn','btn_resume');
+  setText('settingsBtnPause','btn_settings');
+  setText('txt_gameover_title','gameover_title');
+  setText('txt_gameover_sub','gameover_sub');
+  setText('restartBtn','btn_retry');
+  setText('txt_victory_title','victory_title');
+  setText('txt_victory_sub','victory_sub');
+  setText('victoryUnlock','victory_unlock');
+  setText('victoryRestartBtn','btn_play_again');
+  setText('kickHint','kick_hint');
+  const langSelect=document.getElementById('langSelect');
+  if(langSelect){
+    langSelect.innerHTML='';
+    for(const code in LANGUAGES){
+      const opt=document.createElement('option');
+      opt.value=code; opt.textContent=LANGUAGES[code];
+      if(code===currentLang) opt.selected=true;
+      langSelect.appendChild(opt);
+    }
+    langSelect.onchange=(e)=>{ AudioSys.sfx.click(); setLanguage(e.target.value); };
+  }
+}
+function setLanguage(lang){
+  currentLang=lang;
+  saveLang();
+  applyStaticTranslations();
+  // refresh whichever dynamic screen is currently visible so it re-renders in the new language
+  if(!document.getElementById('trophyScreen').classList.contains('hidden')) buildTrophyGrid();
+  if(!document.getElementById('difficultyScreen').classList.contains('hidden')) buildDifficultyGrid();
+  if(!document.getElementById('characterScreen').classList.contains('hidden')) renderCharCarousel();
+  if(game) updateHUDWeapons();
+}
+/* ---------------------------- Entity name translations ---------------------------- */
+// Italian is the default (already stored on the base data objects), so these
+// tables only need to carry the other 4 languages; missing keys fall back
+// to the Italian field automatically.
+const I18N_WEAPON_NAME = {
+  en:{cutter:"Box Cutter",opener:"Letter Opener",ruler:"Metal Ruler",bat:"Baseball Bat",broom:"Broom",mop:"Mop",umbrella:"Umbrella",chair:"Office Chair",keyboard:"Keyboard (used as a club)",crt:"CRT Monitor",extinguisher:"Fire Extinguisher",vacuum:"Vacuum Hose",scissors:"Scissors",cucitrice:"Stapler",stapler:"Automatic Staple Gun",rubberband:"Rubber Band Launcher",tacks:"Thumbtack Launcher",labeler:"Label Gun",glue:"Hot Glue Gun",postit:"Explosive Sticky Note Launcher",tape:"Tape Dispenser",printer:"Paper-Shooting Printer",ink:"Ink Cartridge Launcher",confetti:"Confetti Cannon",mug:"Coffee Mug",bottle:"Steel Water Bottle",paperweight:"Paperweight",calc:"Calculator",mouse:"Corded Mouse (whip)",numpad:"Numeric Keypad",hdd:"External Hard Drive",powerbank:"Power Bank",lamp:"Desk Lamp",katana_rare:"Director's Collector Katana",trophy:"Corporate Trophy",chainsaw:"Chainsaw",drill:"Drill",nailgun:"Nail Gun",blower:"Industrial Leaf Blower",laptop:"CEO's Laptop",server:"Portable Server Rack",fax:"Infernal Fax Machine",copier:"Cursed Photocopier",stamp:"Director's Stamp",coffeemachine:"Supreme Coffee Machine",katana_office:"Office Katana",mech_keyboard:"Legendary Mechanical Keyboard",cryo_cannon:"Cryo Cannon",minigun_staples:"Staple Minigun",rubberband_storm:"Rubber Band Storm",printer_mg:"Paper Machine Gun",coffee_geyser:"Boiling Coffee Geyser",tape_infinite:"Infinite Boomerang",glue_lockdown:"Glue Launcher That Traps Everyone",cyber_cannon:"Cyber Cannon",usb:"USB Stick",megaphone:"Megaphone",mop_boosted:"Boosted Mop",briefcase:"CEO's Briefcase"},
+  es:{cutter:"Cúter",opener:"Abrecartas",ruler:"Regla Metálica",bat:"Bate de Béisbol",broom:"Escoba",mop:"Fregona",umbrella:"Paraguas",chair:"Silla de Oficina",keyboard:"Teclado (usado como maza)",crt:"Monitor CRT",extinguisher:"Extintor",vacuum:"Tubo de Aspiradora",scissors:"Tijeras",cucitrice:"Grapadora",stapler:"Grapadora Automática",rubberband:"Lanza Gomas Elásticas",tacks:"Lanza Chinchetas",labeler:"Pistola de Etiquetas",glue:"Pistola de Silicona Caliente",postit:"Lanza Post-it Explosivos",tape:"Dispensador de Cinta Adhesiva",printer:"Impresora Lanza-Hojas",ink:"Lanza Cartuchos de Tinta",confetti:"Cañón de Confeti",mug:"Taza de Café",bottle:"Cantimplora de Acero",paperweight:"Pisapapeles",calc:"Calculadora",mouse:"Ratón con Cable (látigo)",numpad:"Teclado Numérico",hdd:"Disco Duro Externo",powerbank:"Batería Externa",lamp:"Lámpara de Escritorio",katana_rare:"Katana de Colección del Director",trophy:"Trofeo Corporativo",chainsaw:"Motosierra",drill:"Taladro",nailgun:"Clavadora",blower:"Soplador Industrial",laptop:"Portátil del CEO",server:"Rack de Servidor Portátil",fax:"Fax Infernal",copier:"Fotocopiadora Maldita",stamp:"Sello del Director",coffeemachine:"Máquina de Café Suprema",katana_office:"Katana de Oficina",mech_keyboard:"Teclado Mecánico Legendario",cryo_cannon:"Cañón Criogénico",minigun_staples:"Minigun de Grapas",rubberband_storm:"Tormenta de Gomas Elásticas",printer_mg:"Ametralladora de Papel",coffee_geyser:"Géiser de Café Hirviendo",tape_infinite:"Bumerán Infinito",glue_lockdown:"Lanza-pegamento que Inmoviliza a Todos",cyber_cannon:"Cyber Cañón",usb:"Memoria USB",megaphone:"Megáfono",mop_boosted:"Fregona Potenciada",briefcase:"Maletín del CEO"},
+  fr:{cutter:"Cutter",opener:"Coupe-papier",ruler:"Règle en Métal",bat:"Batte de Baseball",broom:"Balai",mop:"Serpillière",umbrella:"Parapluie",chair:"Chaise de Bureau",keyboard:"Clavier (utilisé comme massue)",crt:"Moniteur CRT",extinguisher:"Extincteur",vacuum:"Tuyau d'Aspirateur",scissors:"Ciseaux",cucitrice:"Agrafeuse",stapler:"Agrafeuse Automatique",rubberband:"Lance-élastiques",tacks:"Lance-punaises",labeler:"Pistolet à Étiquettes",glue:"Pistolet à Colle Chaude",postit:"Lance Post-it Explosifs",tape:"Dévidoir de Scotch",printer:"Imprimante Lance-feuilles",ink:"Lance-cartouches d'Encre",confetti:"Canon à Confettis",mug:"Tasse à Café",bottle:"Gourde en Acier",paperweight:"Presse-papiers",calc:"Calculatrice",mouse:"Souris Filaire (fouet)",numpad:"Pavé Numérique",hdd:"Disque Dur Externe",powerbank:"Batterie Externe",lamp:"Lampe de Bureau",katana_rare:"Katana de Collection du Directeur",trophy:"Trophée d'Entreprise",chainsaw:"Tronçonneuse",drill:"Perceuse",nailgun:"Cloueuse",blower:"Souffleur Industriel",laptop:"Ordinateur Portable du PDG",server:"Rack de Serveur Portable",fax:"Fax Infernal",copier:"Photocopieuse Maudite",stamp:"Tampon du Directeur",coffeemachine:"Machine à Café Suprême",katana_office:"Katana de Bureau",mech_keyboard:"Clavier Mécanique Légendaire",cryo_cannon:"Canon Cryogénique",minigun_staples:"Minigun à Agrafes",rubberband_storm:"Tempête d'Élastiques",printer_mg:"Mitrailleuse à Papier",coffee_geyser:"Geyser de Café Bouillant",tape_infinite:"Boomerang Infini",glue_lockdown:"Lance-colle qui Immobilise Tout le Monde",cyber_cannon:"Cyber Canon",usb:"Clé USB",megaphone:"Mégaphone",mop_boosted:"Serpillière Améliorée",briefcase:"Mallette du PDG"},
+  de:{cutter:"Cuttermesser",opener:"Brieföffner",ruler:"Metalllineal",bat:"Baseballschläger",broom:"Besen",mop:"Mopp",umbrella:"Regenschirm",chair:"Bürostuhl",keyboard:"Tastatur (als Keule benutzt)",crt:"Röhrenmonitor",extinguisher:"Feuerlöscher",vacuum:"Staubsaugerschlauch",scissors:"Schere",cucitrice:"Hefter",stapler:"Automatischer Hefter",rubberband:"Gummiband-Werfer",tacks:"Reißzwecken-Werfer",labeler:"Etikettenpistole",glue:"Heißklebepistole",postit:"Explosive Haftnotiz-Werfer",tape:"Klebeband-Spender",printer:"Papier schießender Drucker",ink:"Tintenpatronen-Werfer",confetti:"Konfettikanone",mug:"Kaffeetasse",bottle:"Stahl-Trinkflasche",paperweight:"Briefbeschwerer",calc:"Taschenrechner",mouse:"Kabelmaus (Peitsche)",numpad:"Nummernblock",hdd:"Externe Festplatte",powerbank:"Powerbank",lamp:"Schreibtischlampe",katana_rare:"Sammler-Katana des Direktors",trophy:"Firmenpokal",chainsaw:"Kettensäge",drill:"Bohrmaschine",nailgun:"Nagelpistole",blower:"Industrielaubbläser",laptop:"Laptop des CEO",server:"Tragbares Server-Rack",fax:"Höllenfax",copier:"Verfluchter Fotokopierer",stamp:"Stempel des Direktors",coffeemachine:"Supreme-Kaffeemaschine",katana_office:"Büro-Katana",mech_keyboard:"Legendäre mechanische Tastatur",cryo_cannon:"Kryokanone",minigun_staples:"Heftklammern-Minigun",rubberband_storm:"Gummiband-Sturm",printer_mg:"Papier-Maschinengewehr",coffee_geyser:"Kochender Kaffee-Geysir",tape_infinite:"Unendlicher Bumerang",glue_lockdown:"Kleber-Werfer, der alle festhält",cyber_cannon:"Cyber-Kanone",usb:"USB-Stick",megaphone:"Megafon",mop_boosted:"Verstärkter Mopp",briefcase:"Aktenkoffer des CEO"},
+};
+function wName(id){ const d=I18N_WEAPON_NAME[currentLang]; return (d&&d[id]) || (WEAPONS[id]&&WEAPONS[id].name) || id; }
+
+const I18N_ENEMY_NAME = {
+  en:{base:"Basic Employee",fastie:"Fast Employee",caffeine:"Caffeine Addict",accountant:"Accountant",intern:"Intern",courier:"Document Courier",callcenter:"Call Center Rep",hr:"Human Resources",marketing:"Marketing",minorboss:"Minor Executive",stressed:"Stressed Out",watercooler:"Water Cooler Guy",programmer:"Programmer",assistant:"Assistant",nerd:"Nerd",teamlead:"Team Leader",ecowarrior:"Eco Warrior",glutton:"Greedy Employee",auditor:"Auditor",cleaner:"Cleaning Staff"},
+  es:{base:"Empleado Básico",fastie:"Empleada Rápida",caffeine:"Adicto a la Cafeína",accountant:"Contable",intern:"Becario",courier:"Mensajero de Documentos",callcenter:"Teleoperador",hr:"Recursos Humanos",marketing:"Marketing",minorboss:"Directivo Menor",stressed:"Estresado",watercooler:"Del Dispensador de Agua",programmer:"Programador",assistant:"Asistente",nerd:"Empollón",teamlead:"Jefe de Equipo",ecowarrior:"Eco Guerrero",glutton:"Empleado Glotón",auditor:"Auditor",cleaner:"Personal de Limpieza"},
+  fr:{base:"Employé de Base",fastie:"Employée Rapide",caffeine:"Accro à la Caféine",accountant:"Comptable",intern:"Stagiaire",courier:"Coursier de Documents",callcenter:"Téléconseiller",hr:"Ressources Humaines",marketing:"Marketing",minorboss:"Cadre Mineur",stressed:"Stressé",watercooler:"De la Fontaine à Eau",programmer:"Développeur",assistant:"Assistant",nerd:"Intello",teamlead:"Chef d'Équipe",ecowarrior:"Éco-guerrier",glutton:"Employé Gourmand",auditor:"Auditeur",cleaner:"Agent d'Entretien"},
+  de:{base:"Einfacher Angestellter",fastie:"Schnelle Angestellte",caffeine:"Koffeinsüchtiger",accountant:"Buchhalter",intern:"Praktikant",courier:"Dokumentenbote",callcenter:"Callcenter-Mitarbeiter",hr:"Personalabteilung",marketing:"Marketing",minorboss:"Kleiner Manager",stressed:"Gestresster",watercooler:"Vom Wasserspender",programmer:"Programmierer",assistant:"Assistent",nerd:"Streber",teamlead:"Teamleiter",ecowarrior:"Öko-Krieger",glutton:"Gieriger Angestellter",auditor:"Prüfer",cleaner:"Reinigungskraft"},
+};
+function eName(id){ const d=I18N_ENEMY_NAME[currentLang]; return (d&&d[id]) || (ENEMIES[id]&&ENEMIES[id].name) || id; }
+
+const I18N_BOSS_NAME = {
+  en:{direttore:"The General Director",hrboss:"The HR Manager",sales:"The Sales Manager",cto:"The CTO",pm:"The Project Manager",ceo:"The CEO"},
+  es:{direttore:"El Director General",hrboss:"La Gerente de Recursos Humanos",sales:"El Gerente de Ventas",cto:"El CTO",pm:"El Jefe de Proyecto",ceo:"El CEO"},
+  fr:{direttore:"Le Directeur Général",hrboss:"La Responsable RH",sales:"Le Directeur des Ventes",cto:"Le CTO",pm:"Le Chef de Projet",ceo:"Le PDG"},
+  de:{direttore:"Der Generaldirektor",hrboss:"Die Personalleiterin",sales:"Der Vertriebsleiter",cto:"Der CTO",pm:"Der Projektleiter",ceo:"Der CEO"},
+};
+function bName(id){ const d=I18N_BOSS_NAME[currentLang]; return (d&&d[id]) || (BOSSES.find(b=>b.id===id)||{}).name || id; }
+
+const I18N_GADGET = {
+  en:{smoke:["Smoke Grenade","Smoke! Enemies slow down"],spray:["Blinding Spray","Enemies are blinded!"],ethernet:["Ethernet Cable","Enemies trapped by the cable!"],battery:["Explosive Battery","BOOM! Battery exploded"],ups:["Pulse UPS","Electric shock across the room!"],fan:["Fan","Gust! Enemies knocked back"],coffeeBuff:["Extra Coffee","Caffeine! Speed and fire rate increased"],energyDrink:["Energy Drink","Sugar rush! Damage increased"],shield:["Makeshift Shield","Invulnerable for a few seconds!"],magnet:["Magnet","All EXP crystals attracted!"],chairThrow:["Spinning Chair (throw)","Chair thrown! Enemies sent flying"]},
+  es:{smoke:["Granada de Humo","¡Humo! Los enemigos se ralentizan"],spray:["Espray Cegador","¡Los enemigos están cegados!"],ethernet:["Cable Ethernet","¡Enemigos inmovilizados por el cable!"],battery:["Batería Explosiva","¡BUM! Batería explotada"],ups:["SAI de Pulsos","¡Descarga eléctrica en toda la sala!"],fan:["Ventilador","¡Ráfaga! Enemigos repelidos"],coffeeBuff:["Café Extra","¡Cafeína! Velocidad y cadencia aumentadas"],energyDrink:["Bebida Energética","¡Subidón de azúcar! Daño aumentado"],shield:["Escudo Improvisado","¡Invulnerable durante unos segundos!"],magnet:["Imán","¡Todos los cristales de EXP atraídos!"],chairThrow:["Silla Giratoria (lanzamiento)","¡Silla lanzada! Enemigos salen volando"]},
+  fr:{smoke:["Grenade Fumigène","Fumée ! Les ennemis ralentissent"],spray:["Spray Aveuglant","Les ennemis sont aveuglés !"],ethernet:["Câble Ethernet","Ennemis immobilisés par le câble !"],battery:["Batterie Explosive","BOOM ! Batterie explosée"],ups:["Onduleur à Impulsions","Décharge électrique dans toute la pièce !"],fan:["Ventilateur","Rafale ! Ennemis repoussés"],coffeeBuff:["Café Extra","Caféine ! Vitesse et cadence augmentées"],energyDrink:["Boisson Énergisante","Montée de sucre ! Dégâts augmentés"],shield:["Bouclier de Fortune","Invulnérable pendant quelques secondes !"],magnet:["Aimant","Tous les cristaux d'EXP attirés !"],chairThrow:["Chaise Pivotante (lancer)","Chaise lancée ! Ennemis projetés"]},
+  de:{smoke:["Rauchgranate","Rauch! Gegner werden langsamer"],spray:["Blendspray","Gegner sind geblendet!"],ethernet:["Ethernet-Kabel","Gegner durch das Kabel festgehalten!"],battery:["Explosive Batterie","BUMM! Batterie explodiert"],ups:["Impuls-USV","Stromschlag im ganzen Raum!"],fan:["Ventilator","Windstoß! Gegner zurückgestoßen"],coffeeBuff:["Extra-Kaffee","Koffein! Tempo und Feuerrate erhöht"],energyDrink:["Energy-Drink","Zuckerschub! Schaden erhöht"],shield:["Behelfsschild","Für einige Sekunden unverwundbar!"],magnet:["Magnet","Alle EXP-Kristalle angezogen!"],chairThrow:["Drehstuhl (Wurf)","Stuhl geworfen! Gegner weggeschleudert"]},
+};
+function gName(id){ const d=I18N_GADGET[currentLang]; return (d&&d[id]&&d[id][0]) || (GADGETS[id]&&GADGETS[id].name) || id; }
+function gMsg(id){ const d=I18N_GADGET[currentLang]; return (d&&d[id]&&d[id][1]) || (GADGETS[id]&&GADGETS[id].msg) || ''; }
+
+const I18N_RARITY = {
+  en:{common:"Common",uncommon:"Uncommon",rare:"Rare",epic:"Epic",legendary:"Legendary"},
+  es:{common:"Común",uncommon:"Poco Común",rare:"Rara",epic:"Épica",legendary:"Legendaria"},
+  fr:{common:"Commune",uncommon:"Peu Commune",rare:"Rare",epic:"Épique",legendary:"Légendaire"},
+  de:{common:"Gewöhnlich",uncommon:"Ungewöhnlich",rare:"Selten",epic:"Episch",legendary:"Legendär"},
+};
+function rName(id){ const d=I18N_RARITY[currentLang]; return (d&&d[id]) || (RARITY[id]&&RARITY[id].name) || id; }
+
+const I18N_STAT = {
+  en:{dmg:["Grit",d=>`Weapon damage +12% (now x${(d.damageMult*1.12).toFixed(2)})`],hp:["Backlogged Vacation",()=>`Max health +20`],spd:["Comfy Shoes",()=>`Move speed +9%`],cd:["Efficiency",()=>`Fire rate +8%`],area:["Overtime",()=>`Weapon area/range +10%`],pickup:["Long Arms",()=>`Pickup radius +30`],armor:["Padded Jacket",()=>`Armor +1 (reduces damage taken)`],regen:["Lunch Break",()=>`Health regen +0.4/s`],luck:["Beginner's Luck",()=>`Luck +8% (better loot)`],xp:["Corporate Training",()=>`Experience gained +12%`],proj:["Extra Ammo",()=>`+1 Projectile for projectile weapons`]},
+  es:{dmg:["Determinación",d=>`Daño de armas +12% (ahora x${(d.damageMult*1.12).toFixed(2)})`],hp:["Vacaciones Acumuladas",()=>`Vida máxima +20`],spd:["Zapatos Cómodos",()=>`Velocidad de movimiento +9%`],cd:["Eficiencia",()=>`Cadencia de disparo +8%`],area:["Horas Extra",()=>`Área/alcance de armas +10%`],pickup:["Brazos Largos",()=>`Radio de recogida +30`],armor:["Chaqueta Acolchada",()=>`Armadura +1 (reduce el daño recibido)`],regen:["Pausa para Comer",()=>`Regeneración de vida +0.4/s`],luck:["Suerte de Principiante",()=>`Suerte +8% (mejores objetos)`],xp:["Formación Corporativa",()=>`Experiencia obtenida +12%`],proj:["Munición Extra",()=>`+1 Proyectil para armas de proyectiles`]},
+  fr:{dmg:["Cran",d=>`Dégâts des armes +12% (maintenant x${(d.damageMult*1.12).toFixed(2)})`],hp:["Congés Accumulés",()=>`Vie maximale +20`],spd:["Chaussures Confortables",()=>`Vitesse de déplacement +9%`],cd:["Efficacité",()=>`Cadence de tir +8%`],area:["Heures Supplémentaires",()=>`Zone/portée des armes +10%`],pickup:["Bras Longs",()=>`Rayon de ramassage +30`],armor:["Veste Rembourrée",()=>`Armure +1 (réduit les dégâts subis)`],regen:["Pause Déjeuner",()=>`Régénération de vie +0.4/s`],luck:["Chance du Débutant",()=>`Chance +8% (meilleur butin)`],xp:["Formation d'Entreprise",()=>`Expérience gagnée +12%`],proj:["Munitions Supplémentaires",()=>`+1 Projectile pour les armes à projectiles`]},
+  de:{dmg:["Biss",d=>`Waffenschaden +12% (jetzt x${(d.damageMult*1.12).toFixed(2)})`],hp:["Angesammelter Urlaub",()=>`Maximale Gesundheit +20`],spd:["Bequeme Schuhe",()=>`Bewegungsgeschwindigkeit +9%`],cd:["Effizienz",()=>`Feuerrate +8%`],area:["Überstunden",()=>`Waffenbereich/-reichweite +10%`],pickup:["Lange Arme",()=>`Aufsammelradius +30`],armor:["Gepolsterte Jacke",()=>`Rüstung +1 (reduziert erlittenen Schaden)`],regen:["Mittagspause",()=>`Lebensregeneration +0,4/s`],luck:["Anfängerglück",()=>`Glück +8% (bessere Beute)`],xp:["Firmenschulung",()=>`Erhaltene Erfahrung +12%`],proj:["Extra-Munition",()=>`+1 Projektil für Projektilwaffen`]},
+};
+function sName(su){ const d=I18N_STAT[currentLang]; return (d&&d[su.id]&&d[su.id][0]) || su.name; }
+function sDesc(su,stats){ const d=I18N_STAT[currentLang]; return (d&&d[su.id]&&d[su.id][1](stats)) || su.desc(stats); }
+
+const I18N_TROPHY = {
+  en:{firstBoss:["First Eviction","Defeat your first boss."],halfway:["Mid-Career","Defeat 3 bosses in a single run."],allBosses:["End of Interviews","Defeat all 6 bosses and beat the CEO."],hardCeo:["Extreme Termination","Beat the CEO on Hard difficulty."],maxWeapon:["Master of the Trade","Bring a weapon to max level."],evolve:["Corporate Evolution","Evolve a weapon."],legendary:["Legendary Item","Collect a legendary weapon."],kills200:["Corporate Restructuring","Kill 200 enemies in a single run."],fullSquad:["Team Building","Trigger Team Break."],survivor10:["Forced Overtime","Survive 10 minutes in a single run."],platinum:["Platinum: Employee of the Month","Unlock every other trophy."]},
+  es:{firstBoss:["Primer Despido","Derrota a tu primer boss."],halfway:["A Mitad de Carrera","Derrota a 3 boss en una sola partida."],allBosses:["Fin de las Entrevistas","Derrota a los 6 boss y vence al CEO."],hardCeo:["Despido Extremo","Vence al CEO en dificultad Difícil."],maxWeapon:["Maestro del Oficio","Lleva un arma al nivel máximo."],evolve:["Evolución Corporativa","Evoluciona un arma."],legendary:["Objeto Legendario","Recoge un arma legendaria."],kills200:["Reestructuración Corporativa","Elimina a 200 enemigos en una partida."],fullSquad:["Team Building","Activa la Pausa de Equipo."],survivor10:["Horas Extra Forzadas","Sobrevive 10 minutos en una partida."],platinum:["Platino: Empleado del Mes","Desbloquea todos los demás trofeos."]},
+  fr:{firstBoss:["Premier Licenciement","Bats ton premier boss."],halfway:["Mi-Carrière","Bats 3 boss en une seule partie."],allBosses:["Fin des Entretiens","Bats les 6 boss et le PDG."],hardCeo:["Licenciement Extrême","Bats le PDG en difficulté Difficile."],maxWeapon:["Maître de l'Outil","Amène une arme au niveau maximum."],evolve:["Évolution d'Entreprise","Fais évoluer une arme."],legendary:["Objet Légendaire","Récupère une arme légendaire."],kills200:["Restructuration d'Entreprise","Tue 200 ennemis en une seule partie."],fullSquad:["Team Building","Déclenche la Pause d'Équipe."],survivor10:["Heures Supplémentaires Forcées","Survis 10 minutes en une seule partie."],platinum:["Platine : Employé du Mois","Débloque tous les autres trophées."]},
+  de:{firstBoss:["Erste Kündigung","Besiege deinen ersten Boss."],halfway:["Mitten in der Karriere","Besiege 3 Bosse in einem einzigen Lauf."],allBosses:["Ende der Vorstellungsgespräche","Besiege alle 6 Bosse und den CEO."],hardCeo:["Extreme Kündigung","Besiege den CEO im Schwierigkeitsgrad Schwer."],maxWeapon:["Meister des Fachs","Bringe eine Waffe auf Maximallevel."],evolve:["Firmen-Evolution","Entwickle eine Waffe weiter."],legendary:["Legendäres Objekt","Sammle eine legendäre Waffe."],kills200:["Unternehmensumstrukturierung","Töte 200 Gegner in einem Lauf."],fullSquad:["Team Building","Löse die Teampause aus."],survivor10:["Erzwungene Überstunden","Überlebe 10 Minuten in einem Lauf."],platinum:["Platin: Mitarbeiter des Monats","Schalte alle anderen Trophäen frei."]},
+};
+function trophyName(id){ const d=I18N_TROPHY[currentLang]; return (d&&d[id]&&d[id][0]) || (TROPHIES[id]&&TROPHIES[id].name) || id; }
+function trophyDesc(id){ const d=I18N_TROPHY[currentLang]; return (d&&d[id]&&d[id][1]) || (TROPHIES[id]&&TROPHIES[id].desc) || ''; }
+
+const I18N_DIFF = {
+  en:{easy:["Easy","Weaker, slower enemies. Ideal for relaxing."],medium:["Medium","The classic, balanced experience."],hard:["Hard","Tougher, faster and more numerous enemies. Needs strategy."],extreme:["Extreme","Unlock: beat the CEO on Hard. The true office nightmare."]},
+  es:{easy:["Fácil","Enemigos más débiles y lentos. Ideal para relajarse."],medium:["Media","La experiencia clásica y equilibrada."],hard:["Difícil","Enemigos más duros, rápidos y numerosos. Requiere estrategia."],extreme:["Extrema","Desbloqueo: vence al CEO en Difícil. La verdadera pesadilla de oficina."]},
+  fr:{easy:["Facile","Ennemis plus faibles et plus lents. Idéal pour se détendre."],medium:["Moyenne","L'expérience classique et équilibrée."],hard:["Difficile","Ennemis plus coriaces, rapides et nombreux. Demande de la stratégie."],extreme:["Extrême","Déblocage : bats le PDG en Difficile. Le vrai cauchemar de bureau."]},
+  de:{easy:["Einfach","Schwächere, langsamere Gegner. Ideal zum Entspannen."],medium:["Mittel","Die klassische, ausgewogene Erfahrung."],hard:["Schwer","Härtere, schnellere und zahlreichere Gegner. Erfordert Strategie."],extreme:["Extrem","Freischaltung: Besiege den CEO auf Schwer. Der wahre Büro-Albtraum."]},
+};
+function diffName(id){ const d=I18N_DIFF[currentLang]; return (d&&d[id]&&d[id][0]) || (DIFFICULTIES[id]&&DIFFICULTIES[id].name) || id; }
+function diffDesc(id){ const d=I18N_DIFF[currentLang]; return (d&&d[id]&&d[id][1]) || (DIFFICULTIES[id]&&DIFFICULTIES[id].desc) || ''; }
+
 function unlockTrophy(id){
   if(!TROPHIES[id] || PROGRESS.trophies[id]) return;
   PROGRESS.trophies[id]=true;
   saveProgress();
-  const t=TROPHIES[id];
-  showToast('🏆 Trofeo sbloccato: '+t.name, '#ffd700');
+  showToast(t('toast_trophy_unlocked',{name:trophyName(id)}), '#ffd700');
   AudioSys.sfx.evolve();
   checkPlatinum();
 }
@@ -862,6 +1279,41 @@ const CHARACTERS = {
     passiveId:'manager', passiveName:'Delega Mortale', passiveIcon:'👤', passiveDesc:"Ogni 20 secondi evoca un assistente che attacca.",
   },
 };
+const I18N_CHAR = {
+  en:{
+    analista:{name:"The Analyst",subtitle:"Data Specialist",desc:"Loves numbers and efficiency. Collects data to empower himself and his colleagues.",weaponName:"Calculator",weaponDesc:"Fires numeric projectiles.",passiveName:"Analytical Mind",passiveDesc:"Every 5 levels, damage increases by 1%."},
+    assistente:{name:"The Assistant",subtitle:"Organized and Fast",desc:"Always on the move, supports the team with speed and precision.",weaponName:"Staple Gun",weaponDesc:"Fires bursts of staples.",passiveName:"Multitasking",passiveDesc:"Increases weapon reload speed by 5%."},
+    informatico:{name:"The IT Guy",subtitle:"Tech Genius",desc:"A silent hacker who uses technology to dominate the chaos.",weaponName:"USB Stick",weaponDesc:"Throws viruses that bounce between enemies.",passiveName:"Backup",passiveDesc:"Creates a temporary shield every 30 seconds."},
+    commerciale:{name:"The Salesman",subtitle:"Talks, Sells, Survives",desc:"Charismatic and ruthless, turns every object into an opportunity.",weaponName:"Megaphone",weaponDesc:"Sound wave that pushes back enemies.",passiveName:"Words That Strike",passiveDesc:"Critical hits have a 10% higher chance to stun."},
+    pulizie:{name:"The Janitor",subtitle:"Underestimated and Lethal",desc:"Nobody notices him. Nobody survives long enough to regret it.",weaponName:"Boosted Mop",weaponDesc:"Hits enemies in an area in front of you.",passiveName:"Grime Resistance",passiveDesc:"Regenerates 1% health every second."},
+    manager:{name:"The Manager",subtitle:"Born to Lead",desc:"Commands, delegates and uses every resource... including you as a last resort.",weaponName:"CEO's Briefcase",weaponDesc:"Throws explosive documents.",passiveName:"Deadly Delegation",passiveDesc:"Summons an attacking assistant every 20 seconds."},
+  },
+  es:{
+    analista:{name:"El Analista",subtitle:"Especialista en Datos",desc:"Ama los números y la eficiencia. Recopila datos para potenciarse a sí mismo y a sus colegas.",weaponName:"Calculadora",weaponDesc:"Dispara proyectiles numéricos.",passiveName:"Mente Analítica",passiveDesc:"Cada 5 niveles, aumenta el daño en un 1%."},
+    assistente:{name:"La Asistente",subtitle:"Organizada y Rápida",desc:"Siempre en movimiento, apoya al equipo con velocidad y precisión.",weaponName:"Grapadora",weaponDesc:"Dispara ráfagas de grapas.",passiveName:"Multitarea",passiveDesc:"Aumenta un 5% la velocidad de recarga de las armas."},
+    informatico:{name:"El Informático",subtitle:"Genio de la Tecnología",desc:"Un hacker silencioso que usa la tecnología para dominar el caos.",weaponName:"Memoria USB",weaponDesc:"Lanza virus que rebotan entre los enemigos.",passiveName:"Copia de Seguridad",passiveDesc:"Cada 30 segundos crea un escudo temporal."},
+    commerciale:{name:"El Comercial",subtitle:"Habla, Vende, Sobrevive",desc:"Carismático y despiadado, convierte cada objeto en una oportunidad.",weaponName:"Megáfono",weaponDesc:"Onda sonora que repele a los enemigos.",passiveName:"Palabras que Golpean",passiveDesc:"Los críticos tienen un 10% más de probabilidad de aturdir."},
+    pulizie:{name:"El Conserje",subtitle:"Subestimado y Letal",desc:"Nadie lo nota. Nadie sobrevive el tiempo suficiente para lamentarlo.",weaponName:"Fregona Potenciada",weaponDesc:"Golpea a los enemigos en un área frente a ti.",passiveName:"Resistencia a la Suciedad",passiveDesc:"Regenera el 1% de la vida cada segundo."},
+    manager:{name:"El Gerente",subtitle:"Nacido para Mandar",desc:"Manda, delega y usa todos los recursos... incluyéndote a ti como último recurso.",weaponName:"Maletín del CEO",weaponDesc:"Lanza documentos explosivos.",passiveName:"Delegación Mortal",passiveDesc:"Invoca a un asistente atacante cada 20 segundos."},
+  },
+  fr:{
+    analista:{name:"L'Analyste",subtitle:"Spécialiste des Données",desc:"Aime les chiffres et l'efficacité. Collecte des données pour se renforcer et renforcer ses collègues.",weaponName:"Calculatrice",weaponDesc:"Tire des projectiles numériques.",passiveName:"Esprit Analytique",passiveDesc:"Tous les 5 niveaux, les dégâts augmentent de 1%."},
+    assistente:{name:"L'Assistante",subtitle:"Organisée et Rapide",desc:"Toujours en mouvement, elle soutient l'équipe avec rapidité et précision.",weaponName:"Agrafeuse",weaponDesc:"Tire des rafales d'agrafes.",passiveName:"Multitâche",passiveDesc:"Augmente de 5% la vitesse de rechargement des armes."},
+    informatico:{name:"L'Informaticien",subtitle:"Génie de la Technologie",desc:"Un hacker silencieux qui utilise la technologie pour dominer le chaos.",weaponName:"Clé USB",weaponDesc:"Lance des virus qui rebondissent entre les ennemis.",passiveName:"Sauvegarde",passiveDesc:"Crée un bouclier temporaire toutes les 30 secondes."},
+    commerciale:{name:"Le Commercial",subtitle:"Parle, Vend, Survit",desc:"Charismatique et sans pitié, il transforme chaque objet en opportunité.",weaponName:"Mégaphone",weaponDesc:"Onde sonore qui repousse les ennemis.",passiveName:"Mots qui Frappent",passiveDesc:"Les coups critiques ont 10% de chances en plus d'étourdir."},
+    pulizie:{name:"L'Agent d'Entretien",subtitle:"Sous-estimé et Létal",desc:"Personne ne le remarque. Personne ne survit assez longtemps pour le regretter.",weaponName:"Serpillière Améliorée",weaponDesc:"Frappe les ennemis dans une zone devant toi.",passiveName:"Résistance à la Saleté",passiveDesc:"Régénère 1% de vie chaque seconde."},
+    manager:{name:"Le Manager",subtitle:"Né pour Diriger",desc:"Commande, délègue et utilise toutes les ressources... y compris toi en dernier recours.",weaponName:"Mallette du PDG",weaponDesc:"Lance des documents explosifs.",passiveName:"Délégation Mortelle",passiveDesc:"Invoque un assistant attaquant toutes les 20 secondes."},
+  },
+  de:{
+    analista:{name:"Der Analyst",subtitle:"Datenspezialist",desc:"Liebt Zahlen und Effizienz. Sammelt Daten, um sich selbst und seine Kollegen zu stärken.",weaponName:"Taschenrechner",weaponDesc:"Schießt numerische Projektile.",passiveName:"Analytischer Verstand",passiveDesc:"Alle 5 Level erhöht sich der Schaden um 1%."},
+    assistente:{name:"Die Assistentin",subtitle:"Organisiert und Schnell",desc:"Immer in Bewegung, unterstützt das Team mit Geschwindigkeit und Präzision.",weaponName:"Heftpistole",weaponDesc:"Schießt Salven von Heftklammern.",passiveName:"Multitasking",passiveDesc:"Erhöht die Nachladegeschwindigkeit der Waffen um 5%."},
+    informatico:{name:"Der IT-Experte",subtitle:"Technik-Genie",desc:"Ein stiller Hacker, der Technologie nutzt, um das Chaos zu beherrschen.",weaponName:"USB-Stick",weaponDesc:"Wirft Viren, die zwischen Gegnern abprallen.",passiveName:"Backup",passiveDesc:"Erzeugt alle 30 Sekunden ein temporäres Schild."},
+    commerciale:{name:"Der Vertriebler",subtitle:"Redet, Verkauft, Überlebt",desc:"Charismatisch und rücksichtslos, verwandelt jedes Objekt in eine Gelegenheit.",weaponName:"Megafon",weaponDesc:"Schallwelle, die Gegner zurückstößt.",passiveName:"Worte, die Treffen",passiveDesc:"Kritische Treffer haben 10% höhere Chance zu betäuben."},
+    pulizie:{name:"Der Hausmeister",subtitle:"Unterschätzt und Tödlich",desc:"Niemand bemerkt ihn. Niemand überlebt lange genug, um es zu bereuen.",weaponName:"Verstärkter Mopp",weaponDesc:"Trifft Gegner in einem Bereich vor dir.",passiveName:"Schmutzresistenz",passiveDesc:"Regeneriert jede Sekunde 1% Gesundheit."},
+    manager:{name:"Der Manager",subtitle:"Geboren zum Führen",desc:"Befiehlt, delegiert und nutzt jede Ressource... dich eingeschlossen, als letztes Mittel.",weaponName:"Aktenkoffer des CEO",weaponDesc:"Wirft explosive Dokumente.",passiveName:"Tödliche Delegation",passiveDesc:"Beschwört alle 20 Sekunden einen angreifenden Assistenten."},
+  },
+};
+function cField(id,field){ const d=I18N_CHAR[currentLang]; return (d&&d[id]&&d[id][field]) || CHARACTERS[id][field]; }
 let selectedCharacterId=null;
 
 /* ---------------------------- Global State ---------------------------- */
@@ -998,7 +1450,7 @@ function consumeDurability(w, wd){
   if(w.maxDurability===Infinity || w.maxDurability===undefined) return;
   w.durability--;
   if(w.durability<=0){
-    showToast('💔 '+wd.name+' si è rotta/o!','#e74c3c');
+    showToast(t('toast_weapon_broke',{name:wName(wd.id)}),'#e74c3c');
     const idx=game.player.weapons.indexOf(w);
     if(idx>=0) game.player.weapons.splice(idx,1);
     updateHUDWeapons();
@@ -1012,7 +1464,7 @@ function initGame(charId){
   game={
     player, time:0, wave:1, kills:0,
     enemies:[], projectiles:[], enemyProjectiles:[], pickups:[], particles:[], floaters:[], clones:[],
-    spawnTimer:0, gadgetTimer:rand(14,20), weaponSpawnTimer:rand(4,7),
+    spawnTimer:0, gadgetTimer:rand(6,9), weaponSpawnTimer:rand(4,7),
     boss:null, nextBossLevel:LEVELS_PER_STAGE, bossIndex:0, victory:false,
     camX:player.x, camY:player.y,
     screenShake:0,
@@ -1149,7 +1601,7 @@ function updateSpawning(dt){
   game.gadgetTimer-=dt;
   if(game.gadgetTimer<=0){
     spawnGadgetPickup();
-    game.gadgetTimer=rand(16,24);
+    game.gadgetTimer=rand(6,9);
   }
   // weapons scattered on the floor to be found while exploring, not just from kills
   game.weaponSpawnTimer-=dt;
@@ -1192,10 +1644,10 @@ function trySpawnBoss(){
     phase:1, attackTimer:1.5, summonTimer:6, enraged:false, telegraph:null,
   };
   game.boss=boss;
-  document.getElementById('bossName').textContent = bd.name;
+  document.getElementById('bossName').textContent = bName(bd.id);
   document.getElementById('bossBarWrap').style.display='block';
   AudioSys.sfx.bossWarning();
-  showToast('⚠️ ' + bd.name + ' è arrivato/a! ⚠️', '#ff4444');
+  showToast(t('toast_boss_arrived',{name:bName(bd.id)}), '#ff4444');
 }
 function endBoss(boss){
   const p=game.player;
@@ -1216,7 +1668,7 @@ function endBoss(boss){
   // and it naturally grows over time since xpNext itself grows with level.
   addXP(p.xpNext*1.6 + game.bossIndex*40);
   p.hp = Math.min(p.stats.maxHp, p.hp + p.stats.maxHp*0.35);
-  showToast('✅ '+boss.data.name+' sconfitto/a! +Vita, +EXP', '#2ecc71');
+  showToast(t('toast_boss_defeated',{name:bName(boss.data.id)}), '#2ecc71');
   game.bossIndex++;
   game.nextBossLevel += LEVELS_PER_STAGE;
   if(game.bossIndex===1) unlockTrophy('firstBoss');
@@ -1281,7 +1733,7 @@ function updatePassive(p,dt){
     p.passiveTimer-=dt;
     if(p.passiveTimer<=0){
       p.buffs.invuln={until:game.time+2.5};
-      showToast('🛡️ Backup attivato! Scudo temporaneo','#e6b800');
+      showToast(t('toast_backup_shield'),'#e6b800');
       p.passiveTimer=30;
     }
   } else if(c.passiveId==='manager'){
@@ -1289,7 +1741,7 @@ function updatePassive(p,dt){
     if(p.passiveTimer<=0){
       if(game.clones.length<3){
         game.clones.push({x:p.x+rand(-30,30),y:p.y+rand(-30,30),life:8,age:0,fireTimer:0,dmg:8*p.stats.damageMult,fireRate:500,icon:'🧑‍💼'});
-        showToast('👤 Delega Mortale: assistente evocato!','#e6b800');
+        showToast(t('toast_delega_mortale'),'#e6b800');
       }
       p.passiveTimer=20;
     }
@@ -1324,7 +1776,7 @@ function addXP(amount){
     p.level++;
     if(p.character==='analista' && p.level%5===0){
       p.stats.damageMult*=1.01;
-      showToast('🧠 Mente Analitica: +1% danno','#3498db');
+      showToast(t('toast_analytical_mind'),'#3498db');
     }
     p.xpNext=Math.round(6+p.level*4.2+Math.pow(p.level,1.35));
     AudioSys.sfx.levelUp();
@@ -1377,25 +1829,25 @@ function showLevelUpCard(){
       const nextLevel=opt.weapon.level+1;
       card.style.borderColor=rc.color;
       const willEvolve = nextLevel>=w.maxLevel && w.evolvesTo;
-      card.innerHTML=`<div class="icon">${iconHtml(w)}</div><div class="name">${w.name} Lv.${opt.weapon.level}→${nextLevel}</div><div class="desc">${willEvolve?'⭐ Si evolverà in '+WEAPONS[w.evolvesTo].name+'!':'Potenzia questa arma'}</div><div class="rarity" style="color:${rc.color}">${rc.name}</div>`;
+      card.innerHTML=`<div class="icon">${iconHtml(w)}</div><div class="name">${wName(w.id)} Lv.${opt.weapon.level}→${nextLevel}</div><div class="desc">${willEvolve?t('card_evolve_desc',{name:wName(w.evolvesTo)}):t('card_upgrade_desc')}</div><div class="rarity" style="color:${rc.color}">${rName(w.rarity)}</div>`;
       card.onclick=()=>chooseOption(()=>{
         opt.weapon.level++;
         if(opt.weapon.level>=w.maxLevel && w.evolvesTo){
           opt.weapon.id=w.evolvesTo; opt.weapon.level=1;
           opt.weapon.durability=Infinity; opt.weapon.maxDurability=Infinity;
           AudioSys.sfx.evolve();
-          showToast('✨ EVOLUZIONE: '+WEAPONS[w.evolvesTo].name+'! ✨','#e6b800');
+          showToast(t('toast_evolution',{name:wName(w.evolvesTo)}),'#e6b800');
           unlockTrophy('evolve');
         } else {
-          showToast(w.name+' potenziata! Lv.'+opt.weapon.level, rc.color);
+          showToast(t('toast_weapon_upgraded',{name:wName(w.id),level:opt.weapon.level}), rc.color);
           if(opt.weapon.level>=w.maxLevel) unlockTrophy('maxWeapon');
         }
       });
     } else {
       const s=opt.stat;
       card.style.borderColor='#888';
-      card.innerHTML=`<div class="icon">${s.icon}</div><div class="name">${s.name}</div><div class="desc">${s.desc(p.stats)}</div><div class="rarity" style="color:#aaa">Potenziamento</div>`;
-      card.onclick=()=>chooseOption(()=>{ s.apply(p); showToast(s.name+'!','#3498db'); });
+      card.innerHTML=`<div class="icon">${s.icon}</div><div class="name">${sName(s)}</div><div class="desc">${sDesc(s,p.stats)}</div><div class="rarity" style="color:#aaa">${t('label_upgrade')}</div>`;
+      card.onclick=()=>chooseOption(()=>{ s.apply(p); showToast(t('toast_stat_upgraded',{name:sName(s)}),'#3498db'); });
     }
     cardsEl.appendChild(card);
   }
@@ -1522,7 +1974,7 @@ function tryEmergencyKick(){
       dealDamage(e,dmg,{knockback:KICK_KNOCKBACK,stun:0.45});
     }
   }
-  showToast('🦵 Calcio d\'emergenza!','#ffb703');
+  showToast(t('toast_kick'),'#ffb703');
 }
 
 function doProjectile(wd,dmg,w){
@@ -1588,7 +2040,7 @@ function doSummon(wd,dmg,w){
   if(game.clones.length>=wd.count) return;
   const p=game.player;
   game.clones.push({x:p.x+rand(-30,30),y:p.y+rand(-30,30),life:wd.duration,age:0,fireTimer:0,dmg,fireRate:wd.fireRate,icon:'📑'});
-  showToast('Fotocopiatrice: clone evocato!','#9b59b6');
+  showToast(t('toast_copier_clone'),'#9b59b6');
 }
 function doAuraTick(wd,dmg,w){
   const p=game.player;
@@ -1609,7 +2061,7 @@ function doAuraTick(wd,dmg,w){
       let da=Math.abs(a-aimAng); if(da>Math.PI) da=TAU-da;
       if(da> (wd.cone*Math.PI/180)/2) continue;
     }
-    dealDamage(e,dmg,{});
+    dealDamage(e,dmg,{knockback:wd.knockback,stun:wd.stun});
     hitAny=true;
     if(wd.slow){ e.slowUntil=game.time+wd.slowDur; e.slowFactor=1-wd.slow; }
   }
@@ -1696,7 +2148,7 @@ function triggerKillStreaks(){
   if(p.seniorKills>=SENIOR_KILLS && !p.seniorArmed){
     p.seniorKills=0;
     p.seniorArmed=true;
-    showToast('🎖️ Collega Senior pronto: intervento automatico sotto il 32% HP!','#4cc9f0');
+    showToast(t('toast_senior_ready'),'#4cc9f0');
   }
 }
 function spawnTeamPause(){
@@ -1716,7 +2168,7 @@ function spawnTeamPause(){
   }
   game.screenShake=6;
   AudioSys.sfx.summon();
-  showToast('👥 Pausa Squadra! 4 colleghi ti proteggono!','#7fd858');
+  showToast(t('toast_team_pause'),'#7fd858');
   unlockTrophy('fullSquad');
 }
 function checkSeniorTrigger(p){
@@ -1735,7 +2187,7 @@ function checkSeniorTrigger(p){
       dealDamage(e,dmg,{knockback:380,stun:0.6});
     }
   }
-  showToast('🎖️ Collega Senior interviene: cura d\'emergenza + colpo devastante!','#4cc9f0');
+  showToast(t('toast_senior_trigger'),'#4cc9f0');
 }
 
 /* ---------------------------- Damage application ---------------------------- */
@@ -1789,7 +2241,7 @@ function onEnemyDeath(e){
     game.pickups.push({kind:'weapon',weaponId:pickLootWeaponId(game.player.stats.luck),x:e.x,y:e.y,r:13,bob:0});
   } else if(r<0.85){
     game.pickups.push({kind:'ammo',x:e.x,y:e.y,r:10,bob:0});
-  } else if(r<0.90){
+  } else if(r<0.95){
     game.pickups.push({kind:'gadget',gadgetId:pick(Object.keys(GADGETS)),x:e.x,y:e.y,r:12,bob:0});
   }
   game.particles.push({kind:'poof',x:e.x,y:e.y,life:0.25,age:0});
@@ -1912,7 +2364,7 @@ function updateBoss(b,dt){
   const spdMult = (b.stunUntil&&b.stunUntil>game.time)?0:1;
   // phase check (CEO)
   if(b.data.pattern==='ceo' && b.phase===1 && b.hp<b.maxHp*0.5){
-    b.phase=2; b.spd*=1.3; showToast('😡 IL CEO SI ARRABBIA! 😡','#ff0000');
+    b.phase=2; b.spd*=1.3; showToast(t('toast_ceo_enrage'),'#ff0000');
   }
   // movement: keep medium distance, chase generally
   if(spdMult>0){
@@ -1945,7 +2397,7 @@ function bossAttack(b){
     fire(5,300,b.dmg,50,'📄');
     if(Math.random()<0.4 && game.enemies.length<200){
       for(let i=0;i<3;i++){ const pos=randEdgePos(); spawnEnemy(pick(['base','courier','minorboss']),pos.x,pos.y); }
-      showToast('Il Direttore chiama rinforzi!','#e6b800');
+      showToast(t('toast_director_reinforcements'),'#e6b800');
     }
   } else if(pat==='hr'){
     fire(8,240,b.dmg*0.8,360,'📋');
@@ -1957,7 +2409,7 @@ function bossAttack(b){
     fire(4,260,b.dmg,30,'🦠');
     if(Math.random()<0.5){
       const w=pick(p.weapons);
-      if(w){ w.cd=(w.cd||0)+1800; showToast('Il CTO disattiva temporaneamente le tue armi!','#3498db'); }
+      if(w){ w.cd=(w.cd||0)+1800; showToast(t('toast_cto_disable'),'#3498db'); }
     }
   } else if(pat==='pm'){
     // homing-ish deadline missile
@@ -2100,7 +2552,7 @@ function collectPickup(pk){
     AudioSys.sfx.gadget();
     collectWeaponPickup(pickLootWeaponId((p.stats.luck||0)+0.5));
     addXP(20);
-    showToast('Cassa del bottino aperta!','#e6b800');
+    showToast(t('toast_chest_opened'),'#e6b800');
   }
   else if(pk.kind==='gadget'){ AudioSys.sfx.gadget(); applyGadget(pk.gadgetId); }
   else if(pk.kind==='weapon'){ AudioSys.sfx.gadget(); collectWeaponPickup(pk.weaponId); }
@@ -2112,10 +2564,10 @@ function collectWeaponPickup(weaponId){
   const existing=p.weapons.find(w=>w.id===weaponId);
   if(existing){
     existing.durability=existing.maxDurability;
-    showToast('🔧 '+wd.name+' ricaricata/riparata!','#2ecc71');
+    showToast(t('toast_weapon_repaired',{name:wName(weaponId)}),'#2ecc71');
   } else if(p.weapons.length<6){
     p.weapons.push(makeWeaponInstance(weaponId));
-    showToast('🎯 Nuova arma: '+wd.name,RARITY[wd.rarity].color);
+    showToast(t('toast_new_weapon',{name:wName(weaponId)}),RARITY[wd.rarity].color);
     updateHUDWeapons();
     if(wd.rarity==='legendary') unlockTrophy('legendary');
   } else if(wd.rarity==='legendary'){
@@ -2123,7 +2575,7 @@ function collectWeaponPickup(weaponId){
     showWeaponSwapPrompt(weaponId);
   } else {
     addXP(15);
-    showToast('Inventario pieno! '+wd.name+' convertita in EXP','#999');
+    showToast(t('toast_inventory_full_xp',{name:wName(weaponId)}),'#999');
   }
 }
 let pendingSwapWeaponId=null;
@@ -2133,7 +2585,7 @@ function showWeaponSwapPrompt(newWeaponId){
   pendingSwapWeaponId=newWeaponId;
   const p=game.player;
   const wd=WEAPONS[newWeaponId];
-  document.getElementById('swapNewWeapon').innerHTML=`${iconHtml(wd,32)} <b style="color:${RARITY[wd.rarity].color}">${wd.name}</b> trovata!`;
+  document.getElementById('swapNewWeapon').innerHTML=`${iconHtml(wd,32)} <b style="color:${RARITY[wd.rarity].color}">${t('swap_new_found',{name:wName(newWeaponId)})}</b>`;
   const cardsEl=document.getElementById('swapCards');
   cardsEl.innerHTML='';
   for(const w of p.weapons){
@@ -2142,11 +2594,11 @@ function showWeaponSwapPrompt(newWeaponId){
     const card=document.createElement('div');
     card.className='card clickable';
     card.style.borderColor=rc.color;
-    card.innerHTML=`<div class="icon">${iconHtml(owd)}</div><div class="name">${owd.name} Lv.${w.level}</div><div class="rarity" style="color:${rc.color}">${rc.name}</div>`;
+    card.innerHTML=`<div class="icon">${iconHtml(owd)}</div><div class="name">${wName(owd.id)} Lv.${w.level}</div><div class="rarity" style="color:${rc.color}">${rName(owd.rarity)}</div>`;
     card.onclick=()=>{
       const idx=p.weapons.indexOf(w);
       p.weapons[idx]=makeWeaponInstance(newWeaponId);
-      showToast('🎯 '+owd.name+' sostituita con '+wd.name+'!',RARITY[wd.rarity].color);
+      showToast(t('toast_weapon_swapped',{old:wName(owd.id),new:wName(newWeaponId)}),RARITY[wd.rarity].color);
       closeWeaponSwapPrompt();
     };
     cardsEl.appendChild(card);
@@ -2169,11 +2621,11 @@ function collectAmmoPickup(){
       any=true;
     }
   }
-  showToast(any?'📦 Munizioni raccolte!':'📦 Munizioni (nessuna arma da ricaricare)','#3498db');
+  showToast(any?t('toast_ammo_collected'):t('toast_ammo_no_weapon'),'#3498db');
 }
 function applyGadget(id){
   const g=GADGETS[id]; const p=game.player;
-  showToast(g.icon+' '+g.msg, '#e6b800');
+  showToast(g.icon+' '+gMsg(id), '#e6b800');
   switch(g.effect){
     case 'slowAll': for(const e of game.enemies){ e.slowUntil=game.time+g.dur; e.slowFactor=1-g.val; } break;
     case 'blindAll': for(const e of game.enemies){ e.blindUntil=game.time+g.dur; } break;
@@ -2229,8 +2681,8 @@ function updateHUDWeapons(){
     slot.appendChild(div);
     const name=document.createElement('div');
     name.className='wName';
-    name.textContent=wd.name;
-    name.title=wd.name;
+    name.textContent=wName(wd.id);
+    name.title=wName(wd.id);
     name.style.color=RARITY[wd.rarity].color;
     slot.appendChild(name);
     bar.appendChild(slot);
@@ -2257,8 +2709,8 @@ function updateHUD(dt){
   document.getElementById('hpLabel').textContent=Math.max(0,Math.round(p.hp))+'/'+Math.round(p.stats.maxHp);
   document.getElementById('xpBar').style.width=Math.max(0,100*p.xp/p.xpNext)+'%';
   document.getElementById('timer').textContent=fmtTime(game.time);
-  document.getElementById('waveInfo').textContent='Livello '+game.wave+'/'+BOSSES.length+' — prossimo boss a Lv.'+game.nextBossLevel;
-  document.getElementById('killCount').textContent='Uccisioni: '+game.kills;
+  document.getElementById('waveInfo').textContent=t('hud_wave',{n:game.wave,total:BOSSES.length,lvl:game.nextBossLevel});
+  document.getElementById('killCount').textContent=t('hud_kills',{n:game.kills});
   if(game.time>=600) unlockTrophy('survivor10');
   updateWeaponDurabilityBars();
   updateCricketEasterEgg(dt);
@@ -2650,9 +3102,8 @@ function togglePause(){
 document.getElementById('resumeBtn').onclick=()=>togglePause();
 document.getElementById('swapDiscardBtn').onclick=()=>{
   if(pendingSwapWeaponId){
-    const wd=WEAPONS[pendingSwapWeaponId];
     addXP(15);
-    showToast('Inventario pieno! '+wd.name+' convertita in EXP','#999');
+    showToast(t('toast_inventory_full_xp',{name:wName(pendingSwapWeaponId)}),'#999');
   }
   closeWeaponSwapPrompt();
 };
@@ -2668,11 +3119,11 @@ function gameOver(){
   document.getElementById('pauseScreen').classList.add('hidden');
   const statsBox=document.getElementById('statsBox');
   statsBox.innerHTML=`
-    <div><span>Tempo sopravvissuto</span><span>${fmtTime(game.time)}</span></div>
-    <div><span>Livello raggiunto</span><span>${game.player.level}</span></div>
-    <div><span>Nemici uccisi</span><span>${game.kills}</span></div>
-    <div><span>Armi raccolte</span><span>${game.player.weapons.length}</span></div>
-    <div><span>Livello raggiunto (boss)</span><span>${game.wave}/${BOSSES.length}</span></div>
+    <div><span>${t('stats_time_survived')}</span><span>${fmtTime(game.time)}</span></div>
+    <div><span>${t('stats_level')}</span><span>${game.player.level}</span></div>
+    <div><span>${t('stats_kills')}</span><span>${game.kills}</span></div>
+    <div><span>${t('stats_weapons')}</span><span>${game.player.weapons.length}</span></div>
+    <div><span>${t('stats_stage')}</span><span>${game.wave}/${BOSSES.length}</span></div>
   `;
   document.getElementById('gameOverScreen').classList.remove('hidden');
 }
@@ -2691,75 +3142,94 @@ function triggerVictory(){
   document.getElementById('weaponSwapScreen').classList.add('hidden');
   const statsBox=document.getElementById('victoryStatsBox');
   statsBox.innerHTML=`
-    <div><span>Tempo totale</span><span>${fmtTime(game.time)}</span></div>
-    <div><span>Livello raggiunto</span><span>${game.player.level}</span></div>
-    <div><span>Nemici uccisi</span><span>${game.kills}</span></div>
-    <div><span>Armi raccolte</span><span>${game.player.weapons.length}</span></div>
+    <div><span>${t('stats_time_total')}</span><span>${fmtTime(game.time)}</span></div>
+    <div><span>${t('stats_level')}</span><span>${game.player.level}</span></div>
+    <div><span>${t('stats_kills')}</span><span>${game.kills}</span></div>
+    <div><span>${t('stats_weapons')}</span><span>${game.player.weapons.length}</span></div>
   `;
   document.getElementById('victoryUnlock').classList.toggle('hidden', currentDifficulty!=='hard');
   document.getElementById('victoryScreen').classList.remove('hidden');
 }
 
+const CHARACTER_IDS=Object.keys(CHARACTERS);
+let charCarouselIndex=0;
 function buildCharGrid(){
+  // single-card carousel: works identically on desktop and mobile —
+  // one character shown at a time, arrows/dots step through the roster
+  if(selectedCharacterId){
+    const idx=CHARACTER_IDS.indexOf(selectedCharacterId);
+    if(idx>=0) charCarouselIndex=idx;
+  }
+  renderCharCarousel();
+}
+function renderCharCarousel(){
   const grid=document.getElementById('charGrid');
   grid.innerHTML='';
-  for(const id in CHARACTERS){
-    const c=CHARACTERS[id];
-    const card=document.createElement('div');
-    card.className='charCard';
-    card.style.borderColor=c.color;
-    card.dataset.id=id;
-    const statRow=(label,val)=>{
-      let segs='';
-      for(let i=1;i<=8;i++) segs+=`<div class="seg ${i<=val?'on':''}"></div>`;
-      return `<div class="statRow" style="color:${c.color}"><span style="width:56px;color:#ccc;">${label}</span><div class="segs">${segs}</div></div>`;
-    };
-    card.innerHTML=`
-      <div class="chHead" style="border-bottom:2px solid ${c.color};">
-        <div class="chName" style="color:${c.color}">${c.name}</div>
-        <div class="chSub">${c.subtitle}</div>
-      </div>
-      <div class="chPortrait">${hasPortrait(id)?`<img src="${PORTRAITS[id].src}" style="max-width:100%;max-height:100%;display:block;margin:0 auto;">`:c.portrait}</div>
-      <div class="chDesc">${c.desc}</div>
-      ${statRow('SALUTE',c.bars.hp)}
-      ${statRow('VELOCITÀ',c.bars.spd)}
-      ${statRow('DANNO',c.bars.dmg)}
-      ${statRow('AREA',c.bars.area)}
-      <div class="box">
-        <div class="boxTitle" style="color:${c.color}">ARMA INIZIALE</div>
-        <div class="boxMain"><span>${hasIcon(WEAPONS[c.weapon].iconKey)?`<img src="${ICONS[WEAPONS[c.weapon].iconKey].src}" style="max-width:22px;max-height:22px;vertical-align:middle;">`:c.weaponIcon}</span><span>${c.weaponName}</span></div>
-        <div class="boxDesc">${c.weaponDesc}</div>
-      </div>
-      <div class="box" style="margin-bottom:12px;">
-        <div class="boxTitle" style="color:${c.color}">ABILITÀ PASSIVA</div>
-        <div class="boxMain"><span>${c.passiveIcon}</span><span>${c.passiveName}</span></div>
-        <div class="boxDesc">${c.passiveDesc}</div>
-      </div>
-    `;
-    card.onclick=()=>{
-      AudioSys.sfx.click();
-      document.querySelectorAll('.charCard').forEach(el=>el.classList.remove('selected'));
-      card.classList.add('selected');
-      selectedCharacterId=id;
-      const btn=document.getElementById('confirmCharBtn');
-      btn.disabled=false; btn.style.opacity=1;
-    };
-    grid.appendChild(card);
-  }
+  const id=CHARACTER_IDS[charCarouselIndex];
+  const c=CHARACTERS[id];
+  selectedCharacterId=id;
+  const card=document.createElement('div');
+  card.className='charCard selected';
+  card.style.borderColor=c.color;
+  card.dataset.id=id;
+  const statRow=(label,val)=>{
+    let segs='';
+    for(let i=1;i<=8;i++) segs+=`<div class="seg ${i<=val?'on':''}"></div>`;
+    return `<div class="statRow" style="color:${c.color}"><span style="width:56px;color:#ccc;">${label}</span><div class="segs">${segs}</div></div>`;
+  };
+  card.innerHTML=`
+    <div class="chHead" style="border-bottom:2px solid ${c.color};">
+      <div class="chName" style="color:${c.color}">${cField(id,'name')}</div>
+      <div class="chSub">${cField(id,'subtitle')}</div>
+    </div>
+    <div class="chPortrait">${hasPortrait(id)?`<img src="${PORTRAITS[id].src}" style="max-width:100%;max-height:100%;display:block;margin:0 auto;">`:c.portrait}</div>
+    <div class="chDesc">${cField(id,'desc')}</div>
+    ${statRow(t('stat_hp'),c.bars.hp)}
+    ${statRow(t('stat_spd'),c.bars.spd)}
+    ${statRow(t('stat_dmg'),c.bars.dmg)}
+    ${statRow(t('stat_area'),c.bars.area)}
+    <div class="box">
+      <div class="boxTitle" style="color:${c.color}">${t('box_weapon')}</div>
+      <div class="boxMain"><span>${hasIcon(WEAPONS[c.weapon].iconKey)?`<img src="${ICONS[WEAPONS[c.weapon].iconKey].src}" style="max-width:22px;max-height:22px;vertical-align:middle;">`:c.weaponIcon}</span><span>${cField(id,'weaponName')}</span></div>
+      <div class="boxDesc">${cField(id,'weaponDesc')}</div>
+    </div>
+    <div class="box" style="margin-bottom:12px;">
+      <div class="boxTitle" style="color:${c.color}">${t('box_passive')}</div>
+      <div class="boxMain"><span>${c.passiveIcon}</span><span>${cField(id,'passiveName')}</span></div>
+      <div class="boxDesc">${cField(id,'passiveDesc')}</div>
+    </div>
+  `;
+  grid.appendChild(card);
+
+  const dots=document.getElementById('charDots');
+  dots.innerHTML='';
+  CHARACTER_IDS.forEach((cid,i)=>{
+    const dot=document.createElement('div');
+    dot.className='charDot clickable'+(i===charCarouselIndex?' active':'');
+    dot.onclick=()=>{ AudioSys.sfx.click(); charCarouselIndex=i; renderCharCarousel(); };
+    dots.appendChild(dot);
+  });
 }
+function stepCharCarousel(dir){
+  AudioSys.sfx.click();
+  charCarouselIndex=(charCarouselIndex+dir+CHARACTER_IDS.length)%CHARACTER_IDS.length;
+  renderCharCarousel();
+}
+document.getElementById('charPrevBtn').onclick=()=>stepCharCarousel(-1);
+document.getElementById('charNextBtn').onclick=()=>stepCharCarousel(1);
 
 function buildTrophyGrid(){
   const grid=document.getElementById('trophyGrid');
   grid.innerHTML='';
   for(const id in TROPHIES){
-    const t=TROPHIES[id];
+    const tr=TROPHIES[id];
     const unlocked=!!PROGRESS.trophies[id];
     const card=document.createElement('div');
     card.className='trophyCard'+(unlocked?' unlocked':' locked')+(id==='platinum'?' platinum':'');
     card.innerHTML=`
-      <div class="trophyIcon">${unlocked?t.icon:'🔒'}</div>
-      <div class="trophyName">${t.name}</div>
-      <div class="trophyDesc">${t.desc}</div>
+      <div class="trophyIcon">${unlocked?tr.icon:'🔒'}</div>
+      <div class="trophyName">${trophyName(id)}</div>
+      <div class="trophyDesc">${trophyDesc(id)}</div>
     `;
     grid.appendChild(card);
   }
@@ -2785,8 +3255,8 @@ function buildDifficultyGrid(){
     card.className='diffCard clickable'+(locked?' locked':'');
     card.innerHTML=`
       <div class="diffIcon">${locked?'🔒':d.icon}</div>
-      <div class="diffName">${d.name}</div>
-      <div class="diffDesc">${locked?'Sblocca battendo il CEO in Difficile.':d.desc}</div>
+      <div class="diffName">${diffName(id)}</div>
+      <div class="diffDesc">${locked?t('diff_locked_desc'):diffDesc(id)}</div>
     `;
     if(!locked){
       card.onclick=()=>{
@@ -2894,6 +3364,8 @@ document.getElementById('hudMuteBtn').onclick=()=>{
   for(let i=0;i<200;i++) s+=pick(icons);
   bg.textContent=s;
 })();
+
+applyStaticTranslations();
 </script>
 </body>
 </html>
