@@ -109,6 +109,21 @@
   .charCard .boxDesc{font-size:10px;color:#aaa;margin-top:2px;line-height:1.3;}
 
   .trophyGrid{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:900px;margin-top:16px;overflow-y:auto;max-height:60vh;padding:4px;}
+
+  #codexNav{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;justify-content:center;}
+  .codexTab{background:#161616;border:2px solid #3a3a3a;border-radius:10px;color:#ccc;font-weight:bold;font-size:13px;padding:9px 18px;}
+  .codexTab.active{border-color:var(--gold);color:var(--gold);background:#241f0f;}
+  .codexGrid{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:1000px;margin-top:16px;padding:4px;}
+  .codexCard{width:230px;background:#161616;border:2px solid #3a3a3a;border-radius:12px;padding:12px;text-align:left;}
+  .codexCard .ccHead{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .codexCard .ccIcon{width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0;}
+  .codexCard .ccIcon img{max-width:100%;max-height:100%;}
+  .codexCard .ccName{font-weight:bold;font-size:13px;line-height:1.2;}
+  .codexCard .ccRarity{font-size:9px;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+  .codexCard .ccDesc{font-size:11px;color:#bbb;line-height:1.4;min-height:44px;}
+  .codexCard .ccTags{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+  .codexCard .ccTag{font-size:9px;background:#0000004a;border:1px solid #ffffff1a;border-radius:5px;padding:2px 6px;color:#ddd;}
+  .codexCard .ccStats{font-size:9px;color:#888;margin-top:6px;}
   .trophyCard{width:220px;background:#161616;border:2px solid #3a3a3a;border-radius:12px;padding:14px;text-align:center;}
   .trophyCard.locked{opacity:0.4;filter:grayscale(1);}
   .trophyCard.unlocked{border-color:#ffd700;}
@@ -215,6 +230,7 @@
       <button class="bigBtn clickable" id="startBtn">🎮 GIOCA</button>
       <button class="bigBtn clickable menuSecondary" id="settingsBtnStart">⚙️ IMPOSTAZIONI</button>
       <button class="bigBtn clickable menuSecondary" id="trophyBtnStart">🏆 TROFEI</button>
+      <button class="bigBtn clickable menuSecondary" id="codexBtnStart">📖 LEGENDA</button>
     </div>
     <div class="smallHint" id="txt_hint_start">Muoviti con WASD / Frecce — tieni premuto il CLICK (o il pulsante 🎯 su mobile) per attaccare — le armi si consumano con l'uso, raccogli munizioni 📦 per ricaricarle — ESC per la pausa</div>
   </div>
@@ -258,6 +274,18 @@
       <div id="keybindHint" class="hidden" style="color:#ffb703;font-size:11px;text-align:center;margin-top:-4px;">…</div>
     </div>
     <button class="bigBtn clickable" id="settingsBackBtn">INDIETRO</button>
+  </div>
+
+  <!-- Codex screen -->
+  <div id="codexScreen" class="screen hidden" style="justify-content:flex-start;overflow-y:auto;padding-top:26px;">
+    <h1 class="title" id="txt_codex_title" style="font-size:min(6vw,36px);">📖 LEGENDA</h1>
+    <div id="codexNav">
+      <button class="codexTab clickable" id="codexTabWeapons" data-tab="weapons">⚔️ <span id="txt_codex_tab_weapons">Armi</span></button>
+      <button class="codexTab clickable" id="codexTabEnemies" data-tab="enemies">🧟 <span id="txt_codex_tab_enemies">Nemici</span></button>
+      <button class="codexTab clickable" id="codexTabBosses" data-tab="bosses">👑 <span id="txt_codex_tab_bosses">Boss</span></button>
+    </div>
+    <div id="codexGrid" class="codexGrid"></div>
+    <button class="bigBtn clickable menuSecondary" id="codexBackBtn" style="margin:16px 0 30px;">INDIETRO</button>
   </div>
 
   <!-- Trophy screen -->
@@ -958,12 +986,13 @@ const I18N_UI = {
   en:{
     subtitle_start:"Office Zombie Survivor",
     flavor_start:"The open space has fallen. Your coworkers have turned into hordes of overtime-starved zombie employees. Loot office weapons, level up, and survive the waves. Every so often a Manager will come to ask for the project status report... in person.",
-    btn_play:"🎮 PLAY", btn_settings:"⚙️ SETTINGS", btn_trophies:"🏆 TROPHIES",
+    btn_play:"🎮 PLAY", btn_settings:"⚙️ SETTINGS", btn_trophies:"🏆 TROPHIES", btn_codex:"📖 LEGEND",
     hint_start:"Move with WASD / Arrows — hold CLICK (or the 🎯 button on mobile) to attack — weapons wear out with use, collect ammo 📦 to reload them — ESC to pause",
     settings_title:"SETTINGS", label_music_vol:"🔊 Music Volume", label_sfx_vol:"🔉 SFX Volume",
     label_mute:"🔇 Mute Audio", label_shake:"📳 Screen Shake", label_language:"🌐 Language", label_key_attack:"🖱️ Attack Key", label_key_kick:"🦵 Kick Key", keybind_listening:"Press a key…", keybind_reserved:"That key is reserved for movement/pause", keybind_conflict:"That key is already used for the other action",
     btn_back:"BACK",
-    trophy_title:"🏆 TROPHIES",
+    trophy_title:"🏆 TROPHIES", codex_title:"📖 LEGEND", codex_tab_weapons:"Weapons", codex_tab_enemies:"Enemies", codex_tab_bosses:"Bosses",
+    codex_stat_dmg:"DMG", codex_stat_cd:"Cooldown", codex_stat_hp:"HP", codex_stat_spd:"Speed", codex_stat_dps:"DMG",
     diff_title:"CHOOSE DIFFICULTY", diff_locked_desc:"Unlock by beating the CEO on Hard.",
     char_title:"CHOOSE YOUR EMPLOYEE", btn_confirm:"CONFIRM CHOICE",
     stat_hp:"HEALTH", stat_spd:"SPEED", stat_dmg:"DAMAGE", stat_area:"AREA",
@@ -1009,12 +1038,13 @@ const I18N_UI = {
   es:{
     subtitle_start:"Office Zombie Survivor",
     flavor_start:"La oficina abierta ha caído. Tus compañeros se han convertido en hordas de empleados zombis hambrientos de horas extra. Recoge armas de oficina, sube de nivel y sobrevive a las oleadas. De vez en cuando un Gerente vendrá a pedir el informe del proyecto... en persona.",
-    btn_play:"🎮 JUGAR", btn_settings:"⚙️ AJUSTES", btn_trophies:"🏆 TROFEOS",
+    btn_play:"🎮 JUGAR", btn_settings:"⚙️ AJUSTES", btn_trophies:"🏆 TROFEOS", btn_codex:"📖 LEYENDA",
     hint_start:"Muévete con WASD / Flechas — mantén pulsado el CLIC (o el botón 🎯 en móvil) para atacar — las armas se desgastan con el uso, recoge munición 📦 para recargarlas — ESC para pausar",
     settings_title:"AJUSTES", label_music_vol:"🔊 Volumen Música", label_sfx_vol:"🔉 Volumen Efectos",
     label_mute:"🔇 Silenciar Audio", label_shake:"📳 Vibración de Pantalla", label_language:"🌐 Idioma", label_key_attack:"🖱️ Tecla de Ataque", label_key_kick:"🦵 Tecla de Patada", keybind_listening:"Pulsa una tecla…", keybind_reserved:"Esa tecla está reservada para el movimiento/pausa", keybind_conflict:"Esa tecla ya se usa para la otra acción",
     btn_back:"ATRÁS",
-    trophy_title:"🏆 TROFEOS",
+    trophy_title:"🏆 TROFEOS", codex_title:"📖 LEYENDA", codex_tab_weapons:"Armas", codex_tab_enemies:"Enemigos", codex_tab_bosses:"Jefes",
+    codex_stat_dmg:"DAÑO", codex_stat_cd:"Recarga", codex_stat_hp:"VIDA", codex_stat_spd:"Velocidad", codex_stat_dps:"DAÑO",
     diff_title:"ELIGE LA DIFICULTAD", diff_locked_desc:"Desbloquea venciendo al CEO en Difícil.",
     char_title:"ELIGE A TU EMPLEADO", btn_confirm:"CONFIRMAR ELECCIÓN",
     stat_hp:"SALUD", stat_spd:"VELOCIDAD", stat_dmg:"DAÑO", stat_area:"ÁREA",
@@ -1060,12 +1090,13 @@ const I18N_UI = {
   fr:{
     subtitle_start:"Office Zombie Survivor",
     flavor_start:"L'open space est tombé. Vos collègues se sont transformés en hordes d'employés zombies affamés d'heures supplémentaires. Récupérez des armes de bureau, montez de niveau et survivez aux vagues. De temps en temps, un Manager viendra demander le rapport du projet... en personne.",
-    btn_play:"🎮 JOUER", btn_settings:"⚙️ PARAMÈTRES", btn_trophies:"🏆 TROPHÉES",
+    btn_play:"🎮 JOUER", btn_settings:"⚙️ PARAMÈTRES", btn_trophies:"🏆 TROPHÉES", btn_codex:"📖 LÉGENDE",
     hint_start:"Déplacez-vous avec WASD / Flèches — maintenez le CLIC (ou le bouton 🎯 sur mobile) pour attaquer — les armes s'usent à l'usage, ramassez des munitions 📦 pour les recharger — ÉCHAP pour la pause",
     settings_title:"PARAMÈTRES", label_music_vol:"🔊 Volume Musique", label_sfx_vol:"🔉 Volume Effets",
     label_mute:"🔇 Couper le son", label_shake:"📳 Tremblement d'écran", label_language:"🌐 Langue", label_key_attack:"🖱️ Touche d'Attaque", label_key_kick:"🦵 Touche de Coup de Pied", keybind_listening:"Appuie sur une touche…", keybind_reserved:"Cette touche est réservée au déplacement/pause", keybind_conflict:"Cette touche est déjà utilisée pour l'autre action",
     btn_back:"RETOUR",
-    trophy_title:"🏆 TROPHÉES",
+    trophy_title:"🏆 TROPHÉES", codex_title:"📖 LÉGENDE", codex_tab_weapons:"Armes", codex_tab_enemies:"Ennemis", codex_tab_bosses:"Boss",
+    codex_stat_dmg:"DÉGÂTS", codex_stat_cd:"Recharge", codex_stat_hp:"PV", codex_stat_spd:"Vitesse", codex_stat_dps:"DÉGÂTS",
     diff_title:"CHOISIR LA DIFFICULTÉ", diff_locked_desc:"Débloquez en battant le PDG en Difficile.",
     char_title:"CHOISIS TON EMPLOYÉ", btn_confirm:"CONFIRMER LE CHOIX",
     stat_hp:"SANTÉ", stat_spd:"VITESSE", stat_dmg:"DÉGÂTS", stat_area:"ZONE",
@@ -1111,12 +1142,13 @@ const I18N_UI = {
   de:{
     subtitle_start:"Office Zombie Survivor",
     flavor_start:"Das Großraumbüro ist gefallen. Deine Kollegen haben sich in Horden überstundenhungriger Zombie-Angestellter verwandelt. Sammle Büro-Waffen, steige im Level auf und überlebe die Wellen. Hin und wieder kommt ein Manager, um persönlich nach dem Projektstatus zu fragen.",
-    btn_play:"🎮 SPIELEN", btn_settings:"⚙️ EINSTELLUNGEN", btn_trophies:"🏆 TROPHÄEN",
+    btn_play:"🎮 SPIELEN", btn_settings:"⚙️ EINSTELLUNGEN", btn_trophies:"🏆 TROPHÄEN", btn_codex:"📖 LEGENDE",
     hint_start:"Bewege dich mit WASD / Pfeiltasten — halte die KLICK-Taste (oder den 🎯-Button auf Mobilgeräten) zum Angreifen gedrückt — Waffen nutzen sich mit der Zeit ab, sammle Munition 📦 zum Nachladen — ESC für Pause",
     settings_title:"EINSTELLUNGEN", label_music_vol:"🔊 Musiklautstärke", label_sfx_vol:"🔉 Effektlautstärke",
     label_mute:"🔇 Ton stumm schalten", label_shake:"📳 Bildschirm-Erschütterung", label_language:"🌐 Sprache", label_key_attack:"🖱️ Angriffstaste", label_key_kick:"🦵 Trittaste", keybind_listening:"Drücke eine Taste…", keybind_reserved:"Diese Taste ist für Bewegung/Pause reserviert", keybind_conflict:"Diese Taste wird bereits für die andere Aktion verwendet",
     btn_back:"ZURÜCK",
-    trophy_title:"🏆 TROPHÄEN",
+    trophy_title:"🏆 TROPHÄEN", codex_title:"📖 LEGENDE", codex_tab_weapons:"Waffen", codex_tab_enemies:"Gegner", codex_tab_bosses:"Bosse",
+    codex_stat_dmg:"SCHADEN", codex_stat_cd:"Abklingzeit", codex_stat_hp:"LP", codex_stat_spd:"Tempo", codex_stat_dps:"SCHADEN",
     diff_title:"SCHWIERIGKEIT WÄHLEN", diff_locked_desc:"Freischalten durch Sieg über den CEO auf Schwer.",
     char_title:"WÄHLE DEINEN ANGESTELLTEN", btn_confirm:"AUSWAHL BESTÄTIGEN",
     stat_hp:"LEBEN", stat_spd:"TEMPO", stat_dmg:"SCHADEN", stat_area:"BEREICH",
@@ -1163,12 +1195,13 @@ const I18N_UI = {
 const I18N_UI_IT_FALLBACK={
   subtitle_start:"Office Zombie Survivor",
   flavor_start:"L'open space è caduto. I tuoi colleghi si sono trasformati in orde di dipendenti-zombie affamati di straordinari. Raccogli armi d'ufficio dal loot, sali di livello e sopravvivi alle ondate. Ogni tanto un Manager verrà a chiedere il resoconto del progetto... di persona.",
-  btn_play:"🎮 GIOCA", btn_settings:"⚙️ IMPOSTAZIONI", btn_trophies:"🏆 TROFEI",
+  btn_play:"🎮 GIOCA", btn_settings:"⚙️ IMPOSTAZIONI", btn_trophies:"🏆 TROFEI", btn_codex:"📖 LEGENDA",
   hint_start:"Muoviti con WASD / Frecce — tieni premuto il CLICK (o il pulsante 🎯 su mobile) per attaccare — le armi si consumano con l'uso, raccogli munizioni 📦 per ricaricarle — ESC per la pausa",
   settings_title:"IMPOSTAZIONI", label_music_vol:"🔊 Volume Musica", label_sfx_vol:"🔉 Volume Effetti",
   label_mute:"🔇 Disattiva Audio", label_shake:"📳 Vibrazione Schermo", label_language:"🌐 Lingua", label_key_attack:"🖱️ Tasto Attacco", label_key_kick:"🦵 Tasto Calcio", keybind_listening:"Premi un tasto…", keybind_reserved:"Quel tasto è riservato al movimento/pausa", keybind_conflict:"Quel tasto è già usato per l'altra azione",
   btn_back:"INDIETRO",
-  trophy_title:"🏆 TROFEI",
+  trophy_title:"🏆 TROFEI", codex_title:"📖 LEGENDA", codex_tab_weapons:"Armi", codex_tab_enemies:"Nemici", codex_tab_bosses:"Boss",
+  codex_stat_dmg:"DANNO", codex_stat_cd:"Ricarica", codex_stat_hp:"VITA", codex_stat_spd:"Velocità", codex_stat_dps:"DANNO",
   diff_title:"SCEGLI LA DIFFICOLTÀ", diff_locked_desc:"Sblocca battendo il CEO in Difficile.",
   char_title:"SCEGLI IL TUO IMPIEGATO", btn_confirm:"CONFERMA SCELTA",
   stat_hp:"SALUTE", stat_spd:"VELOCITÀ", stat_dmg:"DANNO", stat_area:"AREA",
@@ -1237,6 +1270,12 @@ function applyStaticTranslations(){
   setText('settingsBackBtn','btn_back');
   setText('txt_trophy_title','trophy_title');
   setText('trophyBackBtn','btn_back');
+  setText('codexBtnStart','btn_codex');
+  setText('txt_codex_title','codex_title');
+  setText('txt_codex_tab_weapons','codex_tab_weapons');
+  setText('txt_codex_tab_enemies','codex_tab_enemies');
+  setText('txt_codex_tab_bosses','codex_tab_bosses');
+  setText('codexBackBtn','btn_back');
   setText('txt_diff_title','diff_title');
   setText('txt_char_title','char_title');
   setText('confirmCharBtn','btn_confirm');
@@ -1318,6 +1357,7 @@ function setLanguage(lang){
   applyStaticTranslations();
   // refresh whichever dynamic screen is currently visible so it re-renders in the new language
   if(!document.getElementById('trophyScreen').classList.contains('hidden')) buildTrophyGrid();
+  if(!document.getElementById('codexScreen').classList.contains('hidden')) buildCodexActiveTab();
   if(!document.getElementById('difficultyScreen').classList.contains('hidden')) buildDifficultyGrid();
   if(!document.getElementById('characterScreen').classList.contains('hidden')) renderCharCarousel();
   if(game) updateHUDWeapons();
@@ -1393,6 +1433,160 @@ const I18N_DIFF = {
 };
 function diffName(id){ const d=I18N_DIFF[currentLang]; return (d&&d[id]&&d[id][0]) || (DIFFICULTIES[id]&&DIFFICULTIES[id].name) || id; }
 function diffDesc(id){ const d=I18N_DIFF[currentLang]; return (d&&d[id]&&d[id][1]) || (DIFFICULTIES[id]&&DIFFICULTIES[id].desc) || ''; }
+
+/* ---------------------------- Codex (weapon/enemy/boss legend) ---------------------------- */
+const ARCHETYPE_DESC = {
+  it:{melee:"Attacco corpo a corpo: colpisce in un arco davanti a te.",projectile:"Spara proiettili a distanza verso il nemico più vicino.",spread:"Spara una raffica di proiettili a ventaglio.",boomerang:"Lancia un proiettile che va e torna, colpendo due volte.",nova:"Esplode in tutte le direzioni, colpendo chi è vicino.",chain:"Colpisce un nemico e rimbalza sui successivi nelle vicinanze.",summon:"Evoca un alleato temporaneo che combatte al tuo fianco.",orbit:"Ruota costantemente attorno a te, colpendo chi tocca.",aura:"Danneggia in continuazione i nemici in un'area o cono intorno a te."},
+  en:{melee:"Melee attack: hits in an arc in front of you.",projectile:"Fires projectiles at range toward the nearest enemy.",spread:"Fires a fan-shaped burst of projectiles.",boomerang:"Throws a projectile that flies out and back, hitting twice.",nova:"Explodes outward in every direction, hitting anyone nearby.",chain:"Hits an enemy and bounces to nearby ones in sequence.",summon:"Summons a temporary ally that fights alongside you.",orbit:"Constantly spins around you, hitting anything it touches.",aura:"Continuously damages enemies in an area or cone around you."},
+  es:{melee:"Ataque cuerpo a cuerpo: golpea en un arco frente a ti.",projectile:"Dispara proyectiles a distancia hacia el enemigo más cercano.",spread:"Dispara una ráfaga de proyectiles en abanico.",boomerang:"Lanza un proyectil que va y vuelve, golpeando dos veces.",nova:"Explota en todas direcciones, golpeando a quien esté cerca.",chain:"Golpea a un enemigo y rebota hacia los cercanos en secuencia.",summon:"Invoca un aliado temporal que lucha a tu lado.",orbit:"Gira constantemente a tu alrededor, golpeando lo que toca.",aura:"Daña continuamente a los enemigos en un área o cono a tu alrededor."},
+  fr:{melee:"Attaque au corps à corps : frappe en arc devant toi.",projectile:"Tire des projectiles à distance vers l'ennemi le plus proche.",spread:"Tire une rafale de projectiles en éventail.",boomerang:"Lance un projectile qui part et revient, frappant deux fois.",nova:"Explose dans toutes les directions, touchant tout ce qui est proche.",chain:"Frappe un ennemi et rebondit vers les suivants à proximité.",summon:"Invoque un allié temporaire qui combat à tes côtés.",orbit:"Tourne constamment autour de toi, frappant tout ce qu'il touche.",aura:"Endommage en continu les ennemis dans une zone ou un cône autour de toi."},
+  de:{melee:"Nahkampfangriff: trifft in einem Bogen vor dir.",projectile:"Schießt Projektile auf den nächsten Gegner aus der Ferne.",spread:"Feuert eine fächerförmige Salve von Projektilen ab.",boomerang:"Wirft ein Projektil, das hin- und zurückfliegt und zweimal trifft.",nova:"Explodiert in alle Richtungen und trifft alles in der Nähe.",chain:"Trifft einen Gegner und springt nacheinander zu nahen Gegnern über.",summon:"Beschwört einen temporären Verbündeten, der an deiner Seite kämpft.",orbit:"Dreht sich ständig um dich und trifft alles, was es berührt.",aura:"Fügt Gegnern in einem Bereich oder Kegel um dich herum kontinuierlich Schaden zu."},
+};
+function archetypeDesc(a){ const d=ARCHETYPE_DESC[currentLang]||ARCHETYPE_DESC.it; return d[a]||ARCHETYPE_DESC.it[a]||''; }
+
+const BEHAVIOR_DESC = {
+  it:{chase:"Insegue il giocatore e attacca da vicino.",ranged:"Attacca a distanza con proiettili.",caffeine:"Si muove a scatti imprevedibili, difficile da colpire.",slowAura:"Rallenta il giocatore quando è nelle vicinanze.",healAura:"Cura gli altri nemici vicini nel tempo.",enrage:"Diventa più veloce e aggressivo quando è ferito.",explode:"Esplode alla morte, infliggendo danno ad area.",summon:"Evoca altri nemici in supporto.",regen:"Rigenera salute nel tempo.",dodge:"Ha una probabilità di schivare gli attacchi."},
+  en:{chase:"Chases the player and attacks up close.",ranged:"Attacks from a distance with projectiles.",caffeine:"Moves in unpredictable bursts, hard to hit.",slowAura:"Slows the player down when nearby.",healAura:"Heals other nearby enemies over time.",enrage:"Becomes faster and more aggressive when hurt.",explode:"Explodes on death, dealing area damage.",summon:"Summons other enemies for support.",regen:"Regenerates health over time.",dodge:"Has a chance to dodge attacks."},
+  es:{chase:"Persigue al jugador y ataca de cerca.",ranged:"Ataca a distancia con proyectiles.",caffeine:"Se mueve a rachas impredecibles, difícil de golpear.",slowAura:"Ralentiza al jugador cuando está cerca.",healAura:"Cura a otros enemigos cercanos con el tiempo.",enrage:"Se vuelve más rápido y agresivo cuando está herido.",explode:"Explota al morir, causando daño de área.",summon:"Invoca a otros enemigos de apoyo.",regen:"Regenera salud con el tiempo.",dodge:"Tiene probabilidad de esquivar ataques."},
+  fr:{chase:"Poursuit le joueur et attaque de près.",ranged:"Attaque à distance avec des projectiles.",caffeine:"Se déplace par à-coups imprévisibles, difficile à toucher.",slowAura:"Ralentit le joueur à proximité.",healAura:"Soigne les autres ennemis proches au fil du temps.",enrage:"Devient plus rapide et agressif quand il est blessé.",explode:"Explose à sa mort, infligeant des dégâts de zone.",summon:"Invoque d'autres ennemis en soutien.",regen:"Régénère sa santé au fil du temps.",dodge:"A une chance d'esquiver les attaques."},
+  de:{chase:"Verfolgt den Spieler und greift aus der Nähe an.",ranged:"Greift aus der Ferne mit Projektilen an.",caffeine:"Bewegt sich in unvorhersehbaren Schüben, schwer zu treffen.",slowAura:"Verlangsamt den Spieler in der Nähe.",healAura:"Heilt andere nahe Gegner im Laufe der Zeit.",enrage:"Wird schneller und aggressiver, wenn verletzt.",explode:"Explodiert beim Tod und verursacht Flächenschaden.",summon:"Beschwört andere Gegner zur Unterstützung.",regen:"Regeneriert im Laufe der Zeit Gesundheit.",dodge:"Hat eine Chance, Angriffen auszuweichen."},
+};
+function behaviorDesc(b){ const d=BEHAVIOR_DESC[currentLang]||BEHAVIOR_DESC.it; return d[b]||BEHAVIOR_DESC.it[b]||''; }
+
+const PATTERN_DESC = {
+  it:{director:"Attacca con onde d'urto e chiama rinforzi durante lo scontro.",hr:"Colpisce con aure debilitanti che rallentano e confondono.",sales:"Rapido e aggressivo, alterna assalti ravvicinati a distanza.",cto:"Disattiva temporaneamente le tue armi con attacchi tecnologici.",pm:"Coordina scariche multiple e telegrafa attacchi ad area.",ceo:"Il boss finale: combina tutti i pattern, si infuria a metà vita."},
+  en:{director:"Attacks with shockwaves and calls for reinforcements mid-fight.",hr:"Strikes with debilitating auras that slow and confuse.",sales:"Fast and aggressive, alternates close assaults with ranged ones.",cto:"Temporarily disables your weapons with tech-based attacks.",pm:"Coordinates multiple bursts and telegraphs area attacks.",ceo:"The final boss: combines every pattern, enrages at half health."},
+  es:{director:"Ataca con ondas de choque y pide refuerzos a mitad del combate.",hr:"Golpea con auras debilitantes que ralentizan y confunden.",sales:"Rápido y agresivo, alterna asaltos cuerpo a cuerpo y a distancia.",cto:"Desactiva temporalmente tus armas con ataques tecnológicos.",pm:"Coordina ráfagas múltiples y anuncia ataques de área.",ceo:"El boss final: combina todos los patrones, se enfurece a mitad de vida."},
+  fr:{director:"Attaque avec des ondes de choc et appelle des renforts en cours de combat.",hr:"Frappe avec des auras débilitantes qui ralentissent et confondent.",sales:"Rapide et agressif, alterne assauts rapprochés et à distance.",cto:"Désactive temporairement tes armes avec des attaques technologiques.",pm:"Coordonne plusieurs salves et télégraphie des attaques de zone.",ceo:"Le boss final : combine tous les patterns, s'enrage à mi-vie."},
+  de:{director:"Greift mit Schockwellen an und ruft mitten im Kampf Verstärkung.",hr:"Schlägt mit schwächenden Auren zu, die verlangsamen und verwirren.",sales:"Schnell und aggressiv, wechselt zwischen Nah- und Fernangriffen.",cto:"Deaktiviert deine Waffen vorübergehend mit Tech-Angriffen.",pm:"Koordiniert mehrere Salven und kündigt Flächenangriffe an.",ceo:"Der Endboss: vereint alle Muster, wird bei halbem Leben wütend."},
+};
+function patternDesc(p){ const d=PATTERN_DESC[currentLang]||PATTERN_DESC.it; return d[p]||PATTERN_DESC.it[p]||''; }
+
+const TAG_LABELS = {
+  it:{pierce:"🎯 Perfora",knockback:"💥 Respinge",slow:"🐌 Rallenta",stun:"😵 Stordisce",burn:"🔥 Brucia",pull:"🧲 Attira",crit:"🎲 Critico",bounces:"↩️ Rimbalza",dot:"☠️ Veleno",pulse:"💫 Pulsante",channel:"⚡ Canalizzata",ignoreArmor:"🛡️ Ignora armatura"},
+  en:{pierce:"🎯 Pierces",knockback:"💥 Knockback",slow:"🐌 Slows",stun:"😵 Stuns",burn:"🔥 Burns",pull:"🧲 Pulls",crit:"🎲 Crit chance",bounces:"↩️ Bounces",dot:"☠️ Poison",pulse:"💫 Pulsing",channel:"⚡ Channeled",ignoreArmor:"🛡️ Ignores armor"},
+  es:{pierce:"🎯 Perfora",knockback:"💥 Empuje",slow:"🐌 Ralentiza",stun:"😵 Aturde",burn:"🔥 Quema",pull:"🧲 Atrae",crit:"🎲 Crítico",bounces:"↩️ Rebota",dot:"☠️ Veneno",pulse:"💫 Pulsante",channel:"⚡ Canalizada",ignoreArmor:"🛡️ Ignora armadura"},
+  fr:{pierce:"🎯 Perfore",knockback:"💥 Repousse",slow:"🐌 Ralentit",stun:"😵 Étourdit",burn:"🔥 Brûle",pull:"🧲 Attire",crit:"🎲 Critique",bounces:"↩️ Rebondit",dot:"☠️ Poison",pulse:"💫 Pulsant",channel:"⚡ Canalisée",ignoreArmor:"🛡️ Ignore l'armure"},
+  de:{pierce:"🎯 Durchdringt",knockback:"💥 Rückstoß",slow:"🐌 Verlangsamt",stun:"😵 Betäubt",burn:"🔥 Verbrennt",pull:"🧲 Zieht an",crit:"🎲 Kritisch",bounces:"↩️ Springt",dot:"☠️ Gift",pulse:"💫 Pulsierend",channel:"⚡ Kanalisiert",ignoreArmor:"🛡️ Ignoriert Rüstung"},
+};
+function tagLabel(k){ const d=TAG_LABELS[currentLang]||TAG_LABELS.it; return d[k]||TAG_LABELS.it[k]||k; }
+function weaponTags(wd){
+  const tags=[];
+  if(wd.pierce>1) tags.push('pierce');
+  if(wd.knockback) tags.push('knockback');
+  if(wd.slow) tags.push('slow');
+  if(wd.stun) tags.push('stun');
+  if(wd.burn) tags.push('burn');
+  if(wd.pull) tags.push('pull');
+  if(wd.crit) tags.push('crit');
+  if(wd.bounces) tags.push('bounces');
+  if(wd.dot) tags.push('dot');
+  if(wd.pulse) tags.push('pulse');
+  if(wd.channel) tags.push('channel');
+  if(wd.ignoreArmor) tags.push('ignoreArmor');
+  return tags;
+}
+
+/* ---------------------------- Codex (Legend) screen ---------------------------- */
+let codexActiveTab='weapons';
+function codexRarityColor(rarity){ return (RARITY[rarity]&&RARITY[rarity].color)||'#bdbdbd'; }
+function enemyIconHtml(e,size){
+  size=size||36;
+  return hasEnemySprite(e.id) ? `<img src="${ENEMY_SPRITES[e.id].src}" style="max-width:${size}px;max-height:${size}px;">` : e.icon;
+}
+function bossIconHtml(b,size){
+  size=size||36;
+  return hasBossSprite(b.id) ? `<img src="${BOSS_SPRITES[b.id].src}" style="max-width:${size}px;max-height:${size}px;">` : b.icon;
+}
+function buildCodexWeapons(){
+  const grid=document.getElementById('codexGrid');
+  grid.innerHTML='';
+  for(const id in WEAPONS){
+    const wd=WEAPONS[id];
+    const tags=weaponTags(wd);
+    const card=document.createElement('div');
+    card.className='codexCard';
+    card.style.borderColor=codexRarityColor(wd.rarity);
+    card.innerHTML=`
+      <div class="ccHead">
+        <div class="ccIcon">${iconHtml(wd,36)}</div>
+        <div>
+          <div class="ccName">${wName(id)}</div>
+          <div class="ccRarity" style="color:${codexRarityColor(wd.rarity)}">${rName(wd.rarity)}</div>
+        </div>
+      </div>
+      <div class="ccDesc">${archetypeDesc(wd.archetype)}</div>
+      ${tags.length?`<div class="ccTags">${tags.map(tg=>`<div class="ccTag">${tagLabel(tg)}</div>`).join('')}</div>`:''}
+      <div class="ccStats">${t('codex_stat_dmg')} ${wd.dmg} · ${t('codex_stat_cd')} ${(wd.cd/1000).toFixed(2)}s</div>
+    `;
+    grid.appendChild(card);
+  }
+}
+function buildCodexEnemies(){
+  const grid=document.getElementById('codexGrid');
+  grid.innerHTML='';
+  for(const id in ENEMIES){
+    const e=ENEMIES[id];
+    const card=document.createElement('div');
+    card.className='codexCard';
+    card.innerHTML=`
+      <div class="ccHead">
+        <div class="ccIcon">${enemyIconHtml(e,36)}</div>
+        <div>
+          <div class="ccName">${eName(id)}</div>
+        </div>
+      </div>
+      <div class="ccDesc">${behaviorDesc(e.behavior)}</div>
+      <div class="ccStats">${t('codex_stat_hp')} ${e.hp} · ${t('codex_stat_spd')} ${e.spd} · ${t('codex_stat_dmg')} ${e.dmg}</div>
+    `;
+    grid.appendChild(card);
+  }
+}
+function buildCodexBosses(){
+  const grid=document.getElementById('codexGrid');
+  grid.innerHTML='';
+  for(const b of BOSSES){
+    const card=document.createElement('div');
+    card.className='codexCard';
+    card.innerHTML=`
+      <div class="ccHead">
+        <div class="ccIcon">${bossIconHtml(b,36)}</div>
+        <div>
+          <div class="ccName">${bName(b.id)}</div>
+        </div>
+      </div>
+      <div class="ccDesc">${patternDesc(b.pattern)}</div>
+      <div class="ccStats">${t('codex_stat_hp')} ${b.hp} · ${t('codex_stat_spd')} ${b.spd} · ${t('codex_stat_dmg')} ${b.dmg}</div>
+    `;
+    grid.appendChild(card);
+  }
+}
+function buildCodexActiveTab(){
+  if(codexActiveTab==='weapons') buildCodexWeapons();
+  else if(codexActiveTab==='enemies') buildCodexEnemies();
+  else buildCodexBosses();
+}
+function setCodexTab(tab){
+  codexActiveTab=tab;
+  document.getElementById('codexTabWeapons').classList.toggle('active', tab==='weapons');
+  document.getElementById('codexTabEnemies').classList.toggle('active', tab==='enemies');
+  document.getElementById('codexTabBosses').classList.toggle('active', tab==='bosses');
+  buildCodexActiveTab();
+}
+document.getElementById('codexTabWeapons').onclick=()=>{ AudioSys.sfx.click(); setCodexTab('weapons'); };
+document.getElementById('codexTabEnemies').onclick=()=>{ AudioSys.sfx.click(); setCodexTab('enemies'); };
+document.getElementById('codexTabBosses').onclick=()=>{ AudioSys.sfx.click(); setCodexTab('bosses'); };
+document.getElementById('codexBtnStart').onclick=()=>{
+  AudioSys.sfx.click();
+  document.getElementById('startScreen').classList.add('hidden');
+  setCodexTab('weapons');
+  document.getElementById('codexScreen').classList.remove('hidden');
+};
+document.getElementById('codexBackBtn').onclick=()=>{
+  AudioSys.sfx.click();
+  document.getElementById('codexScreen').classList.add('hidden');
+  document.getElementById('startScreen').classList.remove('hidden');
+};
 
 function unlockTrophy(id){
   if(!TROPHIES[id] || PROGRESS.trophies[id]) return;
