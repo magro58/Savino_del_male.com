@@ -456,30 +456,45 @@ const AudioSys = (function(){
       const lvl=level||1;
       if(!megaphoneBuffer){ this._megaphoneScreamSynth(lvl); return; }
       const t0=ctx.currentTime;
+      const tail=megaphoneBuffer.duration+0.9;
+
+      // level 1 stays exactly the plain, unprocessed sample — no chain at all
+      if(lvl<=1){
+        const src0=ctx.createBufferSource();
+        src0.buffer=megaphoneBuffer;
+        src0.connect(sfxGain);
+        src0.start(t0);
+        src0.stop(t0+megaphoneBuffer.duration+0.05);
+        return;
+      }
+
+      // eased 0..1 progress that stays very subtle for most levels and only
+      // opens up noticeably in the last couple, per "aumenta molto lentamente"
+      const ep=Math.pow((lvl-1)/7,2.4);
 
       const src=ctx.createBufferSource();
       src.buffer=megaphoneBuffer;
-      src.playbackRate.value=0.96+Math.min(0.22,lvl*0.02);
+      src.playbackRate.value=1+ep*0.12;
 
-      // distortion grows with level — the "earrape" part
+      // mild distortion, kept cleaner than earlier passes
       const shaper=ctx.createWaveShaper();
-      shaper.curve=makeDistortionCurve(Math.min(70,lvl*9));
+      shaper.curve=makeDistortionCurve(ep*32);
       shaper.oversample='4x';
 
-      // echo: delay+feedback loop, both growing with level
+      // echo: delay+feedback loop, both growing slowly with level
       const delay=ctx.createDelay(1.0);
-      delay.delayTime.value=0.1+Math.min(0.07,lvl*0.008);
+      delay.delayTime.value=0.1+ep*0.05;
       const feedback=ctx.createGain();
-      feedback.gain.value=Math.min(0.55,0.1+lvl*0.05);
+      feedback.gain.value=ep*0.38;
       const echoWet=ctx.createGain();
-      echoWet.gain.value=Math.min(0.45,0.06+lvl*0.04);
+      echoWet.gain.value=ep*0.32;
       delay.connect(feedback); feedback.connect(delay);
 
       const dry=ctx.createGain(); dry.gain.value=1;
       const comp=ctx.createDynamicsCompressor();
-      comp.threshold.value=-8; comp.ratio.value=8; comp.attack.value=0.003; comp.release.value=0.15;
+      comp.threshold.value=-8; comp.ratio.value=6; comp.attack.value=0.004; comp.release.value=0.18;
       const out=ctx.createGain();
-      out.gain.value=Math.min(1.35,0.55+lvl*0.1);
+      out.gain.value=1+ep*0.3;
 
       src.connect(shaper);
       shaper.connect(dry); dry.connect(comp);
@@ -487,26 +502,23 @@ const AudioSys = (function(){
       comp.connect(out); out.connect(sfxGain);
 
       src.start(t0);
-      const tail=megaphoneBuffer.duration+0.9;
       src.stop(t0+tail);
 
-      // at max level, layer a second slightly-offset, detuned copy underneath
-      // for a phased "demonic" doubled-voice effect
-      if(lvl>=8){
-        const demonOffset=0.045;
-        const demon=ctx.createBufferSource();
-        demon.buffer=megaphoneBuffer;
-        demon.playbackRate.value=src.playbackRate.value*0.88;
-        const demonShaper=ctx.createWaveShaper();
-        demonShaper.curve=makeDistortionCurve(50);
-        demonShaper.oversample='4x';
-        const demonGain=ctx.createGain();
-        demonGain.gain.value=0.7;
-        demon.connect(demonShaper); demonShaper.connect(demonGain);
-        demonGain.connect(comp); demonGain.connect(delay);
-        demon.start(t0+demonOffset);
-        demon.stop(t0+demonOffset+tail);
-      }
+      // a second, slightly offset/detuned copy fades in gradually underneath —
+      // barely there at low levels, a full phased "demonic" double voice by 8
+      const demonOffset=0.04;
+      const demon=ctx.createBufferSource();
+      demon.buffer=megaphoneBuffer;
+      demon.playbackRate.value=src.playbackRate.value*(1-ep*0.12);
+      const demonShaper=ctx.createWaveShaper();
+      demonShaper.curve=makeDistortionCurve(ep*24);
+      demonShaper.oversample='4x';
+      const demonGain=ctx.createGain();
+      demonGain.gain.value=ep*0.65;
+      demon.connect(demonShaper); demonShaper.connect(demonGain);
+      demonGain.connect(comp); demonGain.connect(delay);
+      demon.start(t0+demonOffset);
+      demon.stop(t0+demonOffset+tail);
 
       setTimeout(()=>{ try{ delay.disconnect(); feedback.disconnect(); }catch(e){} }, tail*1000+50);
     },
