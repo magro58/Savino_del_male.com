@@ -143,6 +143,10 @@
   .setRow label{flex:1;text-align:left;font-size:14px;white-space:nowrap;}
   .setRow input[type=range]{flex:1.4;accent-color:var(--red);}
   .setRow span{width:38px;text-align:right;font-size:12px;color:#aaa;}
+  .keybindBtn{min-width:90px;background:#1e1e1e;border:2px solid #444;border-radius:8px;color:#fff;font-weight:bold;font-size:13px;padding:6px 12px;letter-spacing:.5px;}
+  .keybindBtn:hover{border-color:#666;}
+  .keybindBtn.listening{border-color:#ffb703;color:#ffb703;animation:kbPulse 1s infinite;}
+  @keyframes kbPulse{0%,100%{opacity:1;}50%{opacity:.5;}}
   #topRight{position:relative;padding-top:26px;}
   #hudMuteBtn{position:absolute;top:4px;right:6px;width:22px;height:22px;border-radius:6px;
     background:#0006;border:1px solid #555;color:#fff;font-size:11px;cursor:pointer;line-height:1;padding:0;}
@@ -243,6 +247,15 @@
         <label id="txt_label_language">🌐 Lingua</label>
         <select id="langSelect" class="clickable"></select>
       </div>
+      <div class="setRow">
+        <label id="txt_label_key_attack">🖱️ Tasto Attacco</label>
+        <button class="keybindBtn clickable" id="keybindAttackBtn">F</button>
+      </div>
+      <div class="setRow">
+        <label id="txt_label_key_kick">🦵 Tasto Calcio</label>
+        <button class="keybindBtn clickable" id="keybindKickBtn">SPAZIO</button>
+      </div>
+      <div id="keybindHint" class="hidden" style="color:#ffb703;font-size:11px;text-align:center;margin-top:-4px;">…</div>
     </div>
     <button class="bigBtn clickable" id="settingsBackBtn">INDIETRO</button>
   </div>
@@ -828,6 +841,26 @@ function loadLang(){
 let currentLang = loadLang();
 function saveLang(){ try{ localStorage.setItem('sdm_lang', currentLang); }catch(e){} }
 
+/* ---------------------------- Key bindings ---------------------------- */
+const DEFAULT_KEYBINDS = {attack:'KeyF', kick:'Space'};
+const RESERVED_CODES = new Set(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Escape']);
+function loadKeybinds(){
+  try{
+    const saved = JSON.parse(localStorage.getItem('sdm_keybinds')||'null');
+    return Object.assign({}, DEFAULT_KEYBINDS, saved||{});
+  }catch(e){ return Object.assign({},DEFAULT_KEYBINDS); }
+}
+let KEYBINDS = loadKeybinds();
+function saveKeybinds(){ try{ localStorage.setItem('sdm_keybinds', JSON.stringify(KEYBINDS)); }catch(e){} }
+function keyLabel(code){
+  if(!code) return '-';
+  if(code==='Space') return 'SPAZIO';
+  if(code.startsWith('Key')) return code.slice(3);
+  if(code.startsWith('Digit')) return code.slice(5);
+  if(code.startsWith('Arrow')) return code.slice(5).toUpperCase();
+  return code;
+}
+
 const I18N_UI = {
   en:{
     subtitle_start:"Office Zombie Survivor",
@@ -835,7 +868,7 @@ const I18N_UI = {
     btn_play:"🎮 PLAY", btn_settings:"⚙️ SETTINGS", btn_trophies:"🏆 TROPHIES",
     hint_start:"Move with WASD / Arrows — hold CLICK (or the 🎯 button on mobile) to attack — weapons wear out with use, collect ammo 📦 to reload them — ESC to pause",
     settings_title:"SETTINGS", label_music_vol:"🔊 Music Volume", label_sfx_vol:"🔉 SFX Volume",
-    label_mute:"🔇 Mute Audio", label_shake:"📳 Screen Shake", label_language:"🌐 Language",
+    label_mute:"🔇 Mute Audio", label_shake:"📳 Screen Shake", label_language:"🌐 Language", label_key_attack:"🖱️ Attack Key", label_key_kick:"🦵 Kick Key", keybind_listening:"Press a key…", keybind_reserved:"That key is reserved for movement/pause", keybind_conflict:"That key is already used for the other action",
     btn_back:"BACK",
     trophy_title:"🏆 TROPHIES",
     diff_title:"CHOOSE DIFFICULTY", diff_locked_desc:"Unlock by beating the CEO on Hard.",
@@ -852,7 +885,7 @@ const I18N_UI = {
     victory_unlock:"🔓 EXTREME mode unlocked!", btn_play_again:"PLAY AGAIN",
     swap_title:"⭐ LEGENDARY WEAPON! ⭐", swap_sub:"Inventory full: choose which weapon to replace",
     swap_discard:"Discard (convert to EXP)", swap_new_found:"{name} found!",
-    kick_hint:"SPACE: kick",
+    kick_hint:"{key}: kick",
     hud_wave:"Level {n}/{total} — next boss at Lv.{lvl}", hud_kills:"Kills: {n}",
     toast_trophy_unlocked:"🏆 Trophy unlocked: {name}",
     toast_weapon_broke:"💔 {name} broke!",
@@ -886,7 +919,7 @@ const I18N_UI = {
     btn_play:"🎮 JUGAR", btn_settings:"⚙️ AJUSTES", btn_trophies:"🏆 TROFEOS",
     hint_start:"Muévete con WASD / Flechas — mantén pulsado el CLIC (o el botón 🎯 en móvil) para atacar — las armas se desgastan con el uso, recoge munición 📦 para recargarlas — ESC para pausar",
     settings_title:"AJUSTES", label_music_vol:"🔊 Volumen Música", label_sfx_vol:"🔉 Volumen Efectos",
-    label_mute:"🔇 Silenciar Audio", label_shake:"📳 Vibración de Pantalla", label_language:"🌐 Idioma",
+    label_mute:"🔇 Silenciar Audio", label_shake:"📳 Vibración de Pantalla", label_language:"🌐 Idioma", label_key_attack:"🖱️ Tecla de Ataque", label_key_kick:"🦵 Tecla de Patada", keybind_listening:"Pulsa una tecla…", keybind_reserved:"Esa tecla está reservada para el movimiento/pausa", keybind_conflict:"Esa tecla ya se usa para la otra acción",
     btn_back:"ATRÁS",
     trophy_title:"🏆 TROFEOS",
     diff_title:"ELIGE LA DIFICULTAD", diff_locked_desc:"Desbloquea venciendo al CEO en Difícil.",
@@ -903,7 +936,7 @@ const I18N_UI = {
     victory_unlock:"🔓 ¡Modo EXTREMO desbloqueado!", btn_play_again:"JUGAR OTRA VEZ",
     swap_title:"⭐ ¡ARMA LEGENDARIA! ⭐", swap_sub:"Inventario lleno: elige qué arma sustituir",
     swap_discard:"Descartar (convertir en EXP)", swap_new_found:"¡{name} encontrada!",
-    kick_hint:"ESPACIO: patada",
+    kick_hint:"{key}: patada",
     hud_wave:"Nivel {n}/{total} — próximo boss en Nv.{lvl}", hud_kills:"Bajas: {n}",
     toast_trophy_unlocked:"🏆 Trofeo desbloqueado: {name}",
     toast_weapon_broke:"💔 ¡{name} se rompió!",
@@ -937,7 +970,7 @@ const I18N_UI = {
     btn_play:"🎮 JOUER", btn_settings:"⚙️ PARAMÈTRES", btn_trophies:"🏆 TROPHÉES",
     hint_start:"Déplacez-vous avec WASD / Flèches — maintenez le CLIC (ou le bouton 🎯 sur mobile) pour attaquer — les armes s'usent à l'usage, ramassez des munitions 📦 pour les recharger — ÉCHAP pour la pause",
     settings_title:"PARAMÈTRES", label_music_vol:"🔊 Volume Musique", label_sfx_vol:"🔉 Volume Effets",
-    label_mute:"🔇 Couper le son", label_shake:"📳 Tremblement d'écran", label_language:"🌐 Langue",
+    label_mute:"🔇 Couper le son", label_shake:"📳 Tremblement d'écran", label_language:"🌐 Langue", label_key_attack:"🖱️ Touche d'Attaque", label_key_kick:"🦵 Touche de Coup de Pied", keybind_listening:"Appuie sur une touche…", keybind_reserved:"Cette touche est réservée au déplacement/pause", keybind_conflict:"Cette touche est déjà utilisée pour l'autre action",
     btn_back:"RETOUR",
     trophy_title:"🏆 TROPHÉES",
     diff_title:"CHOISIR LA DIFFICULTÉ", diff_locked_desc:"Débloquez en battant le PDG en Difficile.",
@@ -954,7 +987,7 @@ const I18N_UI = {
     victory_unlock:"🔓 Mode EXTRÊME débloqué !", btn_play_again:"REJOUER",
     swap_title:"⭐ ARME LÉGENDAIRE ! ⭐", swap_sub:"Inventaire plein : choisis quelle arme remplacer",
     swap_discard:"Jeter (convertir en EXP)", swap_new_found:"{name} trouvée !",
-    kick_hint:"ESPACE : coup de pied",
+    kick_hint:"{key} : coup de pied",
     hud_wave:"Niveau {n}/{total} — prochain boss au Niv.{lvl}", hud_kills:"Éliminations : {n}",
     toast_trophy_unlocked:"🏆 Trophée débloqué : {name}",
     toast_weapon_broke:"💔 {name} s'est cassée !",
@@ -988,7 +1021,7 @@ const I18N_UI = {
     btn_play:"🎮 SPIELEN", btn_settings:"⚙️ EINSTELLUNGEN", btn_trophies:"🏆 TROPHÄEN",
     hint_start:"Bewege dich mit WASD / Pfeiltasten — halte die KLICK-Taste (oder den 🎯-Button auf Mobilgeräten) zum Angreifen gedrückt — Waffen nutzen sich mit der Zeit ab, sammle Munition 📦 zum Nachladen — ESC für Pause",
     settings_title:"EINSTELLUNGEN", label_music_vol:"🔊 Musiklautstärke", label_sfx_vol:"🔉 Effektlautstärke",
-    label_mute:"🔇 Ton stumm schalten", label_shake:"📳 Bildschirm-Erschütterung", label_language:"🌐 Sprache",
+    label_mute:"🔇 Ton stumm schalten", label_shake:"📳 Bildschirm-Erschütterung", label_language:"🌐 Sprache", label_key_attack:"🖱️ Angriffstaste", label_key_kick:"🦵 Trittaste", keybind_listening:"Drücke eine Taste…", keybind_reserved:"Diese Taste ist für Bewegung/Pause reserviert", keybind_conflict:"Diese Taste wird bereits für die andere Aktion verwendet",
     btn_back:"ZURÜCK",
     trophy_title:"🏆 TROPHÄEN",
     diff_title:"SCHWIERIGKEIT WÄHLEN", diff_locked_desc:"Freischalten durch Sieg über den CEO auf Schwer.",
@@ -1005,7 +1038,7 @@ const I18N_UI = {
     victory_unlock:"🔓 EXTREM-Modus freigeschaltet!", btn_play_again:"NOCHMAL SPIELEN",
     swap_title:"⭐ LEGENDÄRE WAFFE! ⭐", swap_sub:"Inventar voll: wähle, welche Waffe ersetzt werden soll",
     swap_discard:"Verwerfen (in EXP umwandeln)", swap_new_found:"{name} gefunden!",
-    kick_hint:"LEERTASTE: Tritt",
+    kick_hint:"{key}: Tritt",
     hud_wave:"Level {n}/{total} — nächster Boss bei Lv.{lvl}", hud_kills:"Abschüsse: {n}",
     toast_trophy_unlocked:"🏆 Trophäe freigeschaltet: {name}",
     toast_weapon_broke:"💔 {name} ist kaputtgegangen!",
@@ -1040,7 +1073,7 @@ const I18N_UI_IT_FALLBACK={
   btn_play:"🎮 GIOCA", btn_settings:"⚙️ IMPOSTAZIONI", btn_trophies:"🏆 TROFEI",
   hint_start:"Muoviti con WASD / Frecce — tieni premuto il CLICK (o il pulsante 🎯 su mobile) per attaccare — le armi si consumano con l'uso, raccogli munizioni 📦 per ricaricarle — ESC per la pausa",
   settings_title:"IMPOSTAZIONI", label_music_vol:"🔊 Volume Musica", label_sfx_vol:"🔉 Volume Effetti",
-  label_mute:"🔇 Disattiva Audio", label_shake:"📳 Vibrazione Schermo", label_language:"🌐 Lingua",
+  label_mute:"🔇 Disattiva Audio", label_shake:"📳 Vibrazione Schermo", label_language:"🌐 Lingua", label_key_attack:"🖱️ Tasto Attacco", label_key_kick:"🦵 Tasto Calcio", keybind_listening:"Premi un tasto…", keybind_reserved:"Quel tasto è riservato al movimento/pausa", keybind_conflict:"Quel tasto è già usato per l'altra azione",
   btn_back:"INDIETRO",
   trophy_title:"🏆 TROFEI",
   diff_title:"SCEGLI LA DIFFICOLTÀ", diff_locked_desc:"Sblocca battendo il CEO in Difficile.",
@@ -1057,7 +1090,7 @@ const I18N_UI_IT_FALLBACK={
   victory_unlock:"🔓 Modalità ESTREMA sbloccata!", btn_play_again:"GIOCA ANCORA",
   swap_title:"⭐ ARMA LEGGENDARIA! ⭐", swap_sub:"Inventario pieno: scegli quale arma sostituire",
   swap_discard:"Scarta (converti in EXP)", swap_new_found:"{name} trovata!",
-  kick_hint:"SPAZIO: calcio",
+  kick_hint:"{key}: calcio",
   hud_wave:"Livello {n}/{total} — prossimo boss a Lv.{lvl}", hud_kills:"Uccisioni: {n}",
   toast_trophy_unlocked:"🏆 Trofeo sbloccato: {name}",
   toast_weapon_broke:"💔 {name} si è rotta/o!",
@@ -1105,6 +1138,9 @@ function applyStaticTranslations(){
   setText('txt_label_mute','label_mute');
   setText('txt_label_shake','label_shake');
   setText('txt_label_language','label_language');
+  setText('txt_label_key_attack','label_key_attack');
+  setText('txt_label_key_kick','label_key_kick');
+  updateKeybindButtons();
   setText('settingsBackBtn','btn_back');
   setText('txt_trophy_title','trophy_title');
   setText('trophyBackBtn','btn_back');
@@ -1126,7 +1162,7 @@ function applyStaticTranslations(){
   setText('txt_victory_sub','victory_sub');
   setText('victoryUnlock','victory_unlock');
   setText('victoryRestartBtn','btn_play_again');
-  setText('kickHint','kick_hint');
+  const kh=document.getElementById('kickHint'); if(kh) kh.textContent=t('kick_hint',{key:keyLabel(KEYBINDS.kick)});
   const langSelect=document.getElementById('langSelect');
   if(langSelect){
     langSelect.innerHTML='';
@@ -1139,6 +1175,50 @@ function applyStaticTranslations(){
     langSelect.onchange=(e)=>{ AudioSys.sfx.click(); setLanguage(e.target.value); };
   }
 }
+function updateKeybindButtons(){
+  const ab=document.getElementById('keybindAttackBtn'), kb=document.getElementById('keybindKickBtn');
+  if(ab) ab.textContent=keyLabel(KEYBINDS.attack);
+  if(kb) kb.textContent=keyLabel(KEYBINDS.kick);
+}
+function startListeningForKeybind(which){
+  awaitingKeybind=which;
+  document.getElementById('keybindAttackBtn').classList.toggle('listening', which==='attack');
+  document.getElementById('keybindKickBtn').classList.toggle('listening', which==='kick');
+  const hint=document.getElementById('keybindHint');
+  hint.textContent=t('keybind_listening');
+  hint.classList.remove('hidden');
+}
+function cancelListeningForKeybind(){
+  awaitingKeybind=null;
+  document.getElementById('keybindAttackBtn').classList.remove('listening');
+  document.getElementById('keybindKickBtn').classList.remove('listening');
+  document.getElementById('keybindHint').classList.add('hidden');
+}
+function captureKeybind(code){
+  if(code==='Escape'){ cancelListeningForKeybind(); return; }
+  const which=awaitingKeybind;
+  const hint=document.getElementById('keybindHint');
+  if(RESERVED_CODES.has(code)){
+    hint.textContent=t('keybind_reserved');
+    return; // stay in listening mode, let them try again
+  }
+  const other = which==='attack' ? 'kick' : 'attack';
+  if(code===KEYBINDS[other]){
+    hint.textContent=t('keybind_conflict');
+    return;
+  }
+  KEYBINDS[which]=code;
+  saveKeybinds();
+  awaitingKeybind=null;
+  document.getElementById('keybindAttackBtn').classList.remove('listening');
+  document.getElementById('keybindKickBtn').classList.remove('listening');
+  hint.classList.add('hidden');
+  updateKeybindButtons();
+  const kh3=document.getElementById('kickHint'); if(kh3) kh3.textContent=t('kick_hint',{key:keyLabel(KEYBINDS.kick)});
+  AudioSys.sfx.click();
+}
+document.getElementById('keybindAttackBtn').onclick=()=>{ AudioSys.sfx.click(); awaitingKeybind==='attack'?cancelListeningForKeybind():startListeningForKeybind('attack'); };
+document.getElementById('keybindKickBtn').onclick=()=>{ AudioSys.sfx.click(); awaitingKeybind==='kick'?cancelListeningForKeybind():startListeningForKeybind('kick'); };
 function setLanguage(lang){
   currentLang=lang;
   saveLang();
@@ -1318,18 +1398,29 @@ function cField(id,field){ const d=I18N_CHAR[currentLang]; return (d&&d[id]&&d[i
 let selectedCharacterId=null;
 
 /* ---------------------------- Global State ---------------------------- */
-const input={x:0,y:0,keys:{},mouseDown:false,mouseWorldX:undefined,mouseWorldY:undefined};
+const input={x:0,y:0,keys:{},mouseDown:false,mouseBtn:false,keyAttack:false,mouseWorldX:undefined,mouseWorldY:undefined};
 let game=null; // holds full run state
 let running=false, paused=false, levelUpOpen=false, weaponSwapOpen=false;
 let lastTime=performance.now();
+function syncAttackInput(){ input.mouseDown = input.mouseBtn || input.keyAttack; }
 
 /* ---------------------------- Input ---------------------------- */
+let awaitingKeybind=null; // 'attack' | 'kick' | null while rebind UI is capturing
 window.addEventListener('keydown',e=>{
+  if(awaitingKeybind){ e.preventDefault(); captureKeybind(e.code); return; }
   input.keys[e.code]=true;
   if(e.code==='Escape'){ togglePause(); }
-  if(e.code==='Space'){ e.preventDefault(); tryEmergencyKick(); }
+  if(e.code===KEYBINDS.kick){ e.preventDefault(); tryEmergencyKick(); }
+  if(e.code===KEYBINDS.attack){
+    e.preventDefault();
+    input.keyAttack=true; syncAttackInput();
+    AudioSys.ensureCtx(); AudioSys.resumeIfNeeded();
+  }
 });
-window.addEventListener('keyup',e=>{ input.keys[e.code]=false; });
+window.addEventListener('keyup',e=>{
+  input.keys[e.code]=false;
+  if(e.code===KEYBINDS.attack){ input.keyAttack=false; syncAttackInput(); }
+});
 
 // mouse: click-to-attack + aim fallback
 function updateMouseWorld(clientX,clientY){
@@ -1337,8 +1428,8 @@ function updateMouseWorld(clientX,clientY){
   input.mouseWorldX = game ? game.camX + (clientX-r.left-VW/2)/ZOOM : undefined;
   input.mouseWorldY = game ? game.camY + (clientY-r.top-VH/2)/ZOOM : undefined;
 }
-canvas.addEventListener('mousedown',e=>{ if(e.button!==0) return; e.preventDefault(); input.mouseDown=true; updateMouseWorld(e.clientX,e.clientY); AudioSys.ensureCtx(); AudioSys.resumeIfNeeded(); });
-window.addEventListener('mouseup',e=>{ if(e.button===0) input.mouseDown=false; });
+canvas.addEventListener('mousedown',e=>{ if(e.button!==0) return; e.preventDefault(); input.mouseBtn=true; syncAttackInput(); updateMouseWorld(e.clientX,e.clientY); AudioSys.ensureCtx(); AudioSys.resumeIfNeeded(); });
+window.addEventListener('mouseup',e=>{ if(e.button===0){ input.mouseBtn=false; syncAttackInput(); } });
 window.addEventListener('mousemove',e=>{ updateMouseWorld(e.clientX,e.clientY); });
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 
@@ -1388,8 +1479,8 @@ if(isTouchDevice()){
 
   const fireBtn=document.getElementById('fireBtn');
   fireBtn.style.display='flex';
-  const fireOn=(e)=>{ e.preventDefault(); input.mouseDown=true; fireBtn.classList.add('active'); AudioSys.ensureCtx(); AudioSys.resumeIfNeeded(); };
-  const fireOff=(e)=>{ input.mouseDown=false; fireBtn.classList.remove('active'); };
+  const fireOn=(e)=>{ e.preventDefault(); input.mouseBtn=true; syncAttackInput(); fireBtn.classList.add('active'); AudioSys.ensureCtx(); AudioSys.resumeIfNeeded(); };
+  const fireOff=(e)=>{ input.mouseBtn=false; syncAttackInput(); fireBtn.classList.remove('active'); };
   fireBtn.addEventListener('touchstart',fireOn,{passive:false});
   fireBtn.addEventListener('touchend',fireOff,{passive:true});
   fireBtn.addEventListener('touchcancel',fireOff,{passive:true});
