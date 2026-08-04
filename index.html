@@ -1873,12 +1873,14 @@ const OBSTACLE_TYPES = [
   {icon:'🖨️', r:19, size:32},
   {icon:'🪑', r:15, size:28},
   {icon:'🧊', r:17, size:32},
+  {icon:'desk', r:32, size:76, kind:'desk'},
+  {icon:'desk', r:32, size:76, kind:'desk'},
 ];
 function makeObstacles(){
   const arr=[];
   const px=WORLD/2, py=WORLD/2;
   let attempts=0;
-  while(arr.length<48 && attempts<800){
+  while(arr.length<58 && attempts<900){
     attempts++;
     const x=rand(90,WORLD-90), y=rand(90,WORLD-90);
     if(dist(x,y,px,py)<280) continue;
@@ -1886,7 +1888,7 @@ function makeObstacles(){
     let overlap=false;
     for(const o of arr){ if(dist(x,y,o.x,o.y) < (o.r+t.r+40)){ overlap=true; break; } }
     if(overlap) continue;
-    arr.push({x,y,r:t.r,size:t.size,icon:t.icon});
+    arr.push({x,y,r:t.r,size:t.size,icon:t.icon,kind:t.kind,rot:t.kind==='desk'?pick([0,1]):0});
   }
   return arr;
 }
@@ -3239,7 +3241,18 @@ function drawFloor(){
   const tile=64;
   const startX=Math.floor((game.camX-VW/2)/tile)*tile;
   const startY=Math.floor((game.camY-VH/2)/tile)*tile;
-  ctx.strokeStyle='#2c2a27'; ctx.lineWidth=1;
+  // office carpet-tile checkerboard
+  for(let x=startX;x<game.camX+VW/2+tile;x+=tile){
+    const tx=Math.round(x/tile);
+    for(let y=startY;y<game.camY+VH/2+tile;y+=tile){
+      const ty=Math.round(y/tile);
+      const s=worldToScreen(x,y);
+      ctx.fillStyle=(tx+ty)%2===0 ? '#26241f' : '#2b2925';
+      ctx.fillRect(s.x,s.y,tile+1,tile+1);
+    }
+  }
+  // subtle tile seams
+  ctx.strokeStyle='#1d1b18'; ctx.lineWidth=1;
   for(let x=startX;x<game.camX+VW/2+tile;x+=tile){
     const s=worldToScreen(x,0);
     ctx.beginPath(); ctx.moveTo(s.x,0); ctx.lineTo(s.x,VH); ctx.stroke();
@@ -3271,13 +3284,41 @@ function drawDecor(){
 function drawObstacles(){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   for(const o of game.obstacles){
-    if(!inView(o.x,o.y,70)) continue;
+    if(!inView(o.x,o.y,80)) continue;
     const s=worldToScreen(o.x,o.y);
+    if(o.kind==='desk'){ drawDesk(o,s); continue; }
     ctx.fillStyle='rgba(0,0,0,0.35)';
     ctx.beginPath(); ctx.ellipse(s.x,s.y+o.size*0.32,o.size*0.42,o.size*0.16,0,0,TAU); ctx.fill();
     ctx.font=o.size+'px sans-serif';
     ctx.fillText(o.icon,s.x,s.y);
   }
+}
+function drawDesk(o,s){
+  const w=o.rot?o.size*0.98:o.size*1.3, h=o.rot?o.size*1.3:o.size*0.98;
+  ctx.save();
+  ctx.translate(s.x,s.y);
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,0.35)';
+  ctx.beginPath(); ctx.ellipse(0,h*0.42,w*0.46,h*0.2,0,0,TAU); ctx.fill();
+  // desk top
+  ctx.fillStyle='#7a5233';
+  ctx.beginPath(); ctx.roundRect(-w/2,-h/2,w,h,6); ctx.fill();
+  ctx.strokeStyle='#4a3018'; ctx.lineWidth=2; ctx.stroke();
+  // inner panel highlight
+  ctx.fillStyle='#8f6540';
+  ctx.beginPath(); ctx.roundRect(-w/2+4,-h/2+4,w-8,h-8,4); ctx.fill();
+  // desk drawer
+  ctx.fillStyle='#5c3d24';
+  const drawerW=w*0.22, drawerH=h*0.5;
+  ctx.fillRect(w/2-drawerW-4,-drawerH/2,drawerW,drawerH);
+  ctx.strokeStyle='#3a2513'; ctx.lineWidth=1;
+  ctx.strokeRect(w/2-drawerW-4,-drawerH/2,drawerW,drawerH);
+  // items on desk
+  ctx.font=Math.round(o.size*0.44)+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🖥️',-w*0.18,-h*0.03);
+  ctx.font=Math.round(o.size*0.26)+'px sans-serif';
+  ctx.fillText('☕',w*0.22,h*0.14);
+  ctx.restore();
 }
 function drawPuddles(){
   for(const pt of game.particles){
