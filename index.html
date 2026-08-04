@@ -2249,7 +2249,7 @@ function onEnemyDeath(e){
 }
 function pickLootWeaponId(luckBoost){
   const all=Object.values(WEAPONS).filter(w=>!w.evolved);
-  const pool=all.map(w=>[w.id, RARITY[w.rarity].weight * ((w.rarity==='rare'||w.rarity==='epic'||w.rarity==='legendary')?(1+(luckBoost||0)*2):1)]);
+  const pool=all.map(w=>[w.id, RARITY[w.rarity].weight * ((w.rarity==='rare'||w.rarity==='epic'||w.rarity==='legendary')?(1+(luckBoost||0)*2):1) * (w.id==='megaphone'?5:1)]);
   return weightedPick(pool);
 }
 
