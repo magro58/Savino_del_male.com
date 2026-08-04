@@ -489,6 +489,25 @@ const AudioSys = (function(){
       src.start(t0);
       const tail=megaphoneBuffer.duration+0.9;
       src.stop(t0+tail);
+
+      // at max level, layer a second slightly-offset, detuned copy underneath
+      // for a phased "demonic" doubled-voice effect
+      if(lvl>=8){
+        const demonOffset=0.045;
+        const demon=ctx.createBufferSource();
+        demon.buffer=megaphoneBuffer;
+        demon.playbackRate.value=src.playbackRate.value*0.88;
+        const demonShaper=ctx.createWaveShaper();
+        demonShaper.curve=makeDistortionCurve(50);
+        demonShaper.oversample='4x';
+        const demonGain=ctx.createGain();
+        demonGain.gain.value=0.7;
+        demon.connect(demonShaper); demonShaper.connect(demonGain);
+        demonGain.connect(comp); demonGain.connect(delay);
+        demon.start(t0+demonOffset);
+        demon.stop(t0+demonOffset+tail);
+      }
+
       setTimeout(()=>{ try{ delay.disconnect(); feedback.disconnect(); }catch(e){} }, tail*1000+50);
     },
     _megaphoneScreamSynth(lvl){
@@ -2075,8 +2094,10 @@ function fireWeapon(wd,w){
     case 'orbit': break; // handled continuously
     case 'aura':
       doAuraTick(wd,dmg,w);
-      if(wd.id==='megaphone') AudioSys.sfx.megaphoneScream(w.level);
-      else AudioSys.sfx.aura();
+      if(wd.id==='megaphone'){
+        AudioSys.sfx.megaphoneScream(w.level);
+        game.screenShake=Math.max(game.screenShake, 4+w.level*0.8);
+      } else AudioSys.sfx.aura();
       break;
   }
 }
