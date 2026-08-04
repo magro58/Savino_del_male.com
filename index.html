@@ -493,6 +493,7 @@ const ctx=canvas.getContext('2d');
 const mmCanvas=document.getElementById('minimap');
 const mmCtx=mmCanvas.getContext('2d');
 let VW=0,VH=0;
+const ZOOM=1.3; // camera zoom: everything drawn in the game world renders this much bigger
 function resize(){VW=canvas.width=window.innerWidth;VH=canvas.height=window.innerHeight;}
 window.addEventListener('resize',resize);
 resize();
@@ -1333,8 +1334,8 @@ window.addEventListener('keyup',e=>{ input.keys[e.code]=false; });
 // mouse: click-to-attack + aim fallback
 function updateMouseWorld(clientX,clientY){
   const r=canvas.getBoundingClientRect();
-  input.mouseWorldX = game ? game.camX + (clientX-r.left-VW/2) : undefined;
-  input.mouseWorldY = game ? game.camY + (clientY-r.top-VH/2) : undefined;
+  input.mouseWorldX = game ? game.camX + (clientX-r.left-VW/2)/ZOOM : undefined;
+  input.mouseWorldY = game ? game.camY + (clientY-r.top-VH/2)/ZOOM : undefined;
 }
 canvas.addEventListener('mousedown',e=>{ if(e.button!==0) return; e.preventDefault(); input.mouseDown=true; updateMouseWorld(e.clientX,e.clientY); AudioSys.ensureCtx(); AudioSys.resumeIfNeeded(); });
 window.addEventListener('mouseup',e=>{ if(e.button===0) input.mouseDown=false; });
@@ -2740,6 +2741,9 @@ function render(){
   let shakeX=0,shakeY=0;
   if(game.screenShake>0){ if(AudioSys.settings.shake){ shakeX=rand(-game.screenShake,game.screenShake); shakeY=rand(-game.screenShake,game.screenShake); } game.screenShake=Math.max(0,game.screenShake-0.6); }
   ctx.translate(shakeX,shakeY);
+  ctx.translate(VW/2,VH/2);
+  ctx.scale(ZOOM,ZOOM);
+  ctx.translate(-VW/2,-VH/2);
 
   // background
   ctx.fillStyle='#23211f';
@@ -2816,7 +2820,8 @@ function drawMinimap(){
   mmCtx.beginPath(); mmCtx.arc(p.x*scale,p.y*scale,7,0,TAU); mmCtx.stroke();
   // viewport rectangle
   mmCtx.strokeStyle='#ffffff55'; mmCtx.lineWidth=1;
-  mmCtx.strokeRect((p.x-VW/2)*scale,(p.y-VH/2)*scale,VW*scale,VH*scale);
+  const vw=VW/ZOOM, vh=VH/ZOOM;
+  mmCtx.strokeRect((p.x-vw/2)*scale,(p.y-vh/2)*scale,vw*scale,vh*scale);
 }
 function drawWeaponIndicators(){
   const p=game.player;
@@ -2865,7 +2870,10 @@ function drawFloor(){
   ctx.strokeStyle='#c0392b'; ctx.lineWidth=6;
   ctx.strokeRect(tl.x,tl.y,br.x-tl.x,br.y-tl.y);
 }
-function inView(x,y,margin){ return x>game.camX-VW/2-margin && x<game.camX+VW/2+margin && y>game.camY-VH/2-margin && y<game.camY+VH/2+margin; }
+function inView(x,y,margin){
+  const hw=VW/(2*ZOOM), hh=VH/(2*ZOOM);
+  return x>game.camX-hw-margin && x<game.camX+hw+margin && y>game.camY-hh-margin && y<game.camY+hh+margin;
+}
 
 function drawDecor(){
   ctx.font='24px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.globalAlpha=0.55;
