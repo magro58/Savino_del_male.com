@@ -2072,6 +2072,7 @@ function endBoss(boss){
     return;
   }
   game.waveCooldown=5;
+  game.enemies=[];
   // rewards — scaled to a couple of levels' worth of XP, not a level explosion,
   // and it naturally grows over time since xpNext itself grows with level.
   addXP(p.xpNext*1.6 + game.bossIndex*40);
@@ -3533,6 +3534,7 @@ function updateWaveCountdown(dt){
     return;
   }
   game.waveCooldown=Math.max(0,game.waveCooldown-dt);
+  if(game.enemies.length) game.enemies.length=0; // battlefield stays clear during the recovery window
   wrap.classList.remove('hidden');
   const frac=game.waveCooldown/WAVE_COOLDOWN_TOTAL;
   document.getElementById('wcProgressCircle').style.strokeDashoffset=(WAVE_COOLDOWN_CIRC*(1-frac))+'';
