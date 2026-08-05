@@ -39,6 +39,15 @@
   #bossBarOuter{background:#000;border:2px solid var(--gold);border-radius:6px;height:16px;overflow:hidden;}
   #bossBarInner{height:100%;background:linear-gradient(90deg,#7d1010,#e74c3c);width:100%;transition:width .2s;}
 
+  #waveCountdownWrap{position:absolute;top:16%;left:50%;transform:translateX(-50%);text-align:center;pointer-events:none;z-index:5;}
+  #txt_next_wave_in{font-size:min(4.2vw,22px);font-weight:bold;color:#ff4a4a;text-shadow:0 2px 6px #000,0 0 12px #ff000055;letter-spacing:1.5px;animation:wcBlink 1s step-start infinite;}
+  @keyframes wcBlink{0%,49%{opacity:1;}50%,100%{opacity:0.15;}}
+  #waveCountdownCircleBox{position:relative;width:88px;height:88px;margin:10px auto 0;}
+  #waveCountdownCircleBox svg{width:100%;height:100%;transform:rotate(-90deg);}
+  .wcBg{fill:none;stroke:#ffffff22;stroke-width:8;}
+  .wcProgress{fill:none;stroke:#ff4a4a;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .1s linear;}
+  #waveCountdownNum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:bold;color:#fff;text-shadow:0 2px 5px #000;}
+
   #weaponBar{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;align-items:flex-start;gap:6px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:6px;}
   .wIcon{position:relative;width:38px;height:38px;border-radius:8px;background:#0006;display:flex;align-items:center;justify-content:center;font-size:20px;border:2px solid var(--grey);}
   .wIcon .lvl{position:absolute;bottom:-4px;right:-4px;background:#000;border:1px solid #555;border-radius:50%;font-size:9px;padding:1px 4px;}
@@ -206,6 +215,17 @@
   </div>
 
   <div id="bossBarWrap"><div id="bossName">BOSS</div><div id="bossBarOuter"><div id="bossBarInner"></div></div></div>
+
+  <div id="waveCountdownWrap" class="hidden">
+    <div id="txt_next_wave_in">PROSSIMA ONDATA TRA</div>
+    <div id="waveCountdownCircleBox">
+      <svg viewBox="0 0 100 100">
+        <circle class="wcBg" cx="50" cy="50" r="44"></circle>
+        <circle class="wcProgress" id="wcProgressCircle" cx="50" cy="50" r="44" stroke-dasharray="276.46" stroke-dashoffset="0"></circle>
+      </svg>
+      <div id="waveCountdownNum">5</div>
+    </div>
+  </div>
 
   <canvas id="minimap" width="140" height="140"></canvas>
 
@@ -993,6 +1013,7 @@ const I18N_UI = {
     btn_back:"BACK",
     trophy_title:"🏆 TROPHIES", codex_title:"📖 LEGEND", codex_tab_weapons:"Weapons", codex_tab_enemies:"Enemies", codex_tab_bosses:"Bosses",
     codex_stat_dmg:"DMG", codex_stat_cd:"Cooldown", codex_stat_hp:"HP", codex_stat_spd:"Speed", codex_stat_dps:"DMG",
+    next_wave_in:"NEXT WAVE IN",
     diff_title:"CHOOSE DIFFICULTY", diff_locked_desc:"Unlock by beating the CEO on Hard.",
     char_title:"CHOOSE YOUR EMPLOYEE", btn_confirm:"CONFIRM CHOICE",
     stat_hp:"HEALTH", stat_spd:"SPEED", stat_dmg:"DAMAGE", stat_area:"AREA",
@@ -1045,6 +1066,7 @@ const I18N_UI = {
     btn_back:"ATRÁS",
     trophy_title:"🏆 TROFEOS", codex_title:"📖 LEYENDA", codex_tab_weapons:"Armas", codex_tab_enemies:"Enemigos", codex_tab_bosses:"Jefes",
     codex_stat_dmg:"DAÑO", codex_stat_cd:"Recarga", codex_stat_hp:"VIDA", codex_stat_spd:"Velocidad", codex_stat_dps:"DAÑO",
+    next_wave_in:"PRÓXIMA OLEADA EN",
     diff_title:"ELIGE LA DIFICULTAD", diff_locked_desc:"Desbloquea venciendo al CEO en Difícil.",
     char_title:"ELIGE A TU EMPLEADO", btn_confirm:"CONFIRMAR ELECCIÓN",
     stat_hp:"SALUD", stat_spd:"VELOCIDAD", stat_dmg:"DAÑO", stat_area:"ÁREA",
@@ -1097,6 +1119,7 @@ const I18N_UI = {
     btn_back:"RETOUR",
     trophy_title:"🏆 TROPHÉES", codex_title:"📖 LÉGENDE", codex_tab_weapons:"Armes", codex_tab_enemies:"Ennemis", codex_tab_bosses:"Boss",
     codex_stat_dmg:"DÉGÂTS", codex_stat_cd:"Recharge", codex_stat_hp:"PV", codex_stat_spd:"Vitesse", codex_stat_dps:"DÉGÂTS",
+    next_wave_in:"PROCHAINE VAGUE DANS",
     diff_title:"CHOISIR LA DIFFICULTÉ", diff_locked_desc:"Débloquez en battant le PDG en Difficile.",
     char_title:"CHOISIS TON EMPLOYÉ", btn_confirm:"CONFIRMER LE CHOIX",
     stat_hp:"SANTÉ", stat_spd:"VITESSE", stat_dmg:"DÉGÂTS", stat_area:"ZONE",
@@ -1149,6 +1172,7 @@ const I18N_UI = {
     btn_back:"ZURÜCK",
     trophy_title:"🏆 TROPHÄEN", codex_title:"📖 LEGENDE", codex_tab_weapons:"Waffen", codex_tab_enemies:"Gegner", codex_tab_bosses:"Bosse",
     codex_stat_dmg:"SCHADEN", codex_stat_cd:"Abklingzeit", codex_stat_hp:"LP", codex_stat_spd:"Tempo", codex_stat_dps:"SCHADEN",
+    next_wave_in:"NÄCHSTE WELLE IN",
     diff_title:"SCHWIERIGKEIT WÄHLEN", diff_locked_desc:"Freischalten durch Sieg über den CEO auf Schwer.",
     char_title:"WÄHLE DEINEN ANGESTELLTEN", btn_confirm:"AUSWAHL BESTÄTIGEN",
     stat_hp:"LEBEN", stat_spd:"TEMPO", stat_dmg:"SCHADEN", stat_area:"BEREICH",
@@ -1202,6 +1226,7 @@ const I18N_UI_IT_FALLBACK={
   btn_back:"INDIETRO",
   trophy_title:"🏆 TROFEI", codex_title:"📖 LEGENDA", codex_tab_weapons:"Armi", codex_tab_enemies:"Nemici", codex_tab_bosses:"Boss",
   codex_stat_dmg:"DANNO", codex_stat_cd:"Ricarica", codex_stat_hp:"VITA", codex_stat_spd:"Velocità", codex_stat_dps:"DANNO",
+  next_wave_in:"PROSSIMA ONDATA TRA",
   diff_title:"SCEGLI LA DIFFICOLTÀ", diff_locked_desc:"Sblocca battendo il CEO in Difficile.",
   char_title:"SCEGLI IL TUO IMPIEGATO", btn_confirm:"CONFERMA SCELTA",
   stat_hp:"SALUTE", stat_spd:"VELOCITÀ", stat_dmg:"DANNO", stat_area:"AREA",
@@ -1270,6 +1295,7 @@ function applyStaticTranslations(){
   setText('settingsBackBtn','btn_back');
   setText('txt_trophy_title','trophy_title');
   setText('trophyBackBtn','btn_back');
+  setText('txt_next_wave_in','next_wave_in');
   setText('codexBtnStart','btn_codex');
   setText('txt_codex_title','codex_title');
   setText('txt_codex_tab_weapons','codex_tab_weapons');
@@ -1844,7 +1870,7 @@ function initGame(charId){
     player, time:0, wave:1, kills:0,
     enemies:[], projectiles:[], enemyProjectiles:[], pickups:[], particles:[], floaters:[], clones:[],
     spawnTimer:0, gadgetTimer:rand(6,9), weaponSpawnTimer:rand(4,7),
-    boss:null, nextBossLevel:LEVELS_PER_STAGE, bossIndex:0, victory:false,
+    boss:null, nextBossLevel:LEVELS_PER_STAGE, bossIndex:0, victory:false, waveCooldown:0,
     camX:player.x, camY:player.y,
     screenShake:0,
     over:false,
@@ -1957,7 +1983,7 @@ function randEdgePos(){
   return {x:clamp(p.x+Math.cos(ang)*R,20,WORLD-20), y:clamp(p.y+Math.sin(ang)*R,20,WORLD-20)};
 }
 function updateSpawning(dt){
-  if(game.boss) return; // no normal spawns during boss fight
+  if(game.boss || game.waveCooldown>0) return; // no normal spawns during boss fight or post-boss recovery
   game.spawnTimer-=dt;
   const pr=progress();
   // pace also quickens with actual kill count (an active player fighting hard
@@ -2045,6 +2071,7 @@ function endBoss(boss){
     triggerVictory();
     return;
   }
+  game.waveCooldown=5;
   // rewards — scaled to a couple of levels' worth of XP, not a level explosion,
   // and it naturally grows over time since xpNext itself grows with level.
   addXP(p.xpNext*1.6 + game.bossIndex*40);
@@ -3496,11 +3523,28 @@ function updateWave(){
   game.wave = Math.min(BOSSES.length, game.bossIndex+1);
 }
 
+/* ---------------------------- Post-boss recovery countdown ---------------------------- */
+const WAVE_COOLDOWN_TOTAL=5;
+const WAVE_COOLDOWN_CIRC=2*Math.PI*44;
+function updateWaveCountdown(dt){
+  const wrap=document.getElementById('waveCountdownWrap');
+  if(game.waveCooldown<=0){
+    if(!wrap.classList.contains('hidden')) wrap.classList.add('hidden');
+    return;
+  }
+  game.waveCooldown=Math.max(0,game.waveCooldown-dt);
+  wrap.classList.remove('hidden');
+  const frac=game.waveCooldown/WAVE_COOLDOWN_TOTAL;
+  document.getElementById('wcProgressCircle').style.strokeDashoffset=(WAVE_COOLDOWN_CIRC*(1-frac))+'';
+  document.getElementById('waveCountdownNum').textContent=Math.ceil(game.waveCooldown);
+}
+
 /* ---------------------------- Game loop ---------------------------- */
 function gameStep(dt){
   game.time+=dt;
   game.camX=game.player.x; game.camY=game.player.y;
   updateWave();
+  updateWaveCountdown(dt);
   updateSpawning(dt);
   trySpawnBoss();
   updatePlayer(dt);
