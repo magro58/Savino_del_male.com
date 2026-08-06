@@ -280,6 +280,11 @@
         <span></span>
       </div>
       <div class="setRow">
+        <label id="txt_label_aim_mouse">🎯 Mira con il Mouse</label>
+        <input type="checkbox" id="aimMouseCheck" class="clickable" style="width:20px;height:20px;">
+        <span></span>
+      </div>
+      <div class="setRow">
         <label id="txt_label_language">🌐 Lingua</label>
         <select id="langSelect" class="clickable"></select>
       </div>
@@ -404,7 +409,7 @@ const MEGAPHONE_SAMPLE_B64 = "SUQzBAAAAAACDFRYWFgAAAASAAADbWFqb3JfYnJhbmQATTRBIA
 const AudioSys = (function(){
   let ctx=null, masterGain=null, sfxGain=null, musicGain=null;
   let megaphoneBuffer=null, megaphoneBufferLoading=false;
-  const settings = { musicVol:60, sfxVol:80, muted:false, shake:true };
+  const settings = { musicVol:60, sfxVol:80, muted:false, shake:true, aimMode:'auto' };
   try{
     const saved = JSON.parse(localStorage.getItem('sdm_settings')||'null');
     if(saved) Object.assign(settings, saved);
@@ -1009,7 +1014,7 @@ const I18N_UI = {
     btn_play:"🎮 PLAY", btn_settings:"⚙️ SETTINGS", btn_trophies:"🏆 TROPHIES", btn_codex:"📖 LEGEND",
     hint_start:"Move with WASD / Arrows — hold CLICK (or the 🎯 button on mobile) to attack — weapons wear out with use, collect ammo 📦 to reload them — ESC to pause",
     settings_title:"SETTINGS", label_music_vol:"🔊 Music Volume", label_sfx_vol:"🔉 SFX Volume",
-    label_mute:"🔇 Mute Audio", label_shake:"📳 Screen Shake", label_language:"🌐 Language", label_key_attack:"🖱️ Attack Key", label_key_kick:"🦵 Kick Key", keybind_listening:"Press a key…", keybind_reserved:"That key is reserved for movement/pause", keybind_conflict:"That key is already used for the other action",
+    label_mute:"🔇 Mute Audio", label_shake:"📳 Screen Shake", label_aim_mouse:"🎯 Aim With Mouse", label_language:"🌐 Language", label_key_attack:"🖱️ Attack Key", label_key_kick:"🦵 Kick Key", keybind_listening:"Press a key…", keybind_reserved:"That key is reserved for movement/pause", keybind_conflict:"That key is already used for the other action",
     btn_back:"BACK",
     trophy_title:"🏆 TROPHIES", codex_title:"📖 LEGEND", codex_tab_weapons:"Weapons", codex_tab_enemies:"Enemies", codex_tab_bosses:"Bosses",
     codex_stat_dmg:"DMG", codex_stat_cd:"Cooldown", codex_stat_hp:"HP", codex_stat_spd:"Speed", codex_stat_dps:"DMG",
@@ -1062,7 +1067,7 @@ const I18N_UI = {
     btn_play:"🎮 JUGAR", btn_settings:"⚙️ AJUSTES", btn_trophies:"🏆 TROFEOS", btn_codex:"📖 LEYENDA",
     hint_start:"Muévete con WASD / Flechas — mantén pulsado el CLIC (o el botón 🎯 en móvil) para atacar — las armas se desgastan con el uso, recoge munición 📦 para recargarlas — ESC para pausar",
     settings_title:"AJUSTES", label_music_vol:"🔊 Volumen Música", label_sfx_vol:"🔉 Volumen Efectos",
-    label_mute:"🔇 Silenciar Audio", label_shake:"📳 Vibración de Pantalla", label_language:"🌐 Idioma", label_key_attack:"🖱️ Tecla de Ataque", label_key_kick:"🦵 Tecla de Patada", keybind_listening:"Pulsa una tecla…", keybind_reserved:"Esa tecla está reservada para el movimiento/pausa", keybind_conflict:"Esa tecla ya se usa para la otra acción",
+    label_mute:"🔇 Silenciar Audio", label_shake:"📳 Vibración de Pantalla", label_aim_mouse:"🎯 Apuntar con el Ratón", label_language:"🌐 Idioma", label_key_attack:"🖱️ Tecla de Ataque", label_key_kick:"🦵 Tecla de Patada", keybind_listening:"Pulsa una tecla…", keybind_reserved:"Esa tecla está reservada para el movimiento/pausa", keybind_conflict:"Esa tecla ya se usa para la otra acción",
     btn_back:"ATRÁS",
     trophy_title:"🏆 TROFEOS", codex_title:"📖 LEYENDA", codex_tab_weapons:"Armas", codex_tab_enemies:"Enemigos", codex_tab_bosses:"Jefes",
     codex_stat_dmg:"DAÑO", codex_stat_cd:"Recarga", codex_stat_hp:"VIDA", codex_stat_spd:"Velocidad", codex_stat_dps:"DAÑO",
@@ -1115,7 +1120,7 @@ const I18N_UI = {
     btn_play:"🎮 JOUER", btn_settings:"⚙️ PARAMÈTRES", btn_trophies:"🏆 TROPHÉES", btn_codex:"📖 LÉGENDE",
     hint_start:"Déplacez-vous avec WASD / Flèches — maintenez le CLIC (ou le bouton 🎯 sur mobile) pour attaquer — les armes s'usent à l'usage, ramassez des munitions 📦 pour les recharger — ÉCHAP pour la pause",
     settings_title:"PARAMÈTRES", label_music_vol:"🔊 Volume Musique", label_sfx_vol:"🔉 Volume Effets",
-    label_mute:"🔇 Couper le son", label_shake:"📳 Tremblement d'écran", label_language:"🌐 Langue", label_key_attack:"🖱️ Touche d'Attaque", label_key_kick:"🦵 Touche de Coup de Pied", keybind_listening:"Appuie sur une touche…", keybind_reserved:"Cette touche est réservée au déplacement/pause", keybind_conflict:"Cette touche est déjà utilisée pour l'autre action",
+    label_mute:"🔇 Couper le son", label_shake:"📳 Tremblement d'écran", label_aim_mouse:"🎯 Viser avec la Souris", label_language:"🌐 Langue", label_key_attack:"🖱️ Touche d'Attaque", label_key_kick:"🦵 Touche de Coup de Pied", keybind_listening:"Appuie sur une touche…", keybind_reserved:"Cette touche est réservée au déplacement/pause", keybind_conflict:"Cette touche est déjà utilisée pour l'autre action",
     btn_back:"RETOUR",
     trophy_title:"🏆 TROPHÉES", codex_title:"📖 LÉGENDE", codex_tab_weapons:"Armes", codex_tab_enemies:"Ennemis", codex_tab_bosses:"Boss",
     codex_stat_dmg:"DÉGÂTS", codex_stat_cd:"Recharge", codex_stat_hp:"PV", codex_stat_spd:"Vitesse", codex_stat_dps:"DÉGÂTS",
@@ -1168,7 +1173,7 @@ const I18N_UI = {
     btn_play:"🎮 SPIELEN", btn_settings:"⚙️ EINSTELLUNGEN", btn_trophies:"🏆 TROPHÄEN", btn_codex:"📖 LEGENDE",
     hint_start:"Bewege dich mit WASD / Pfeiltasten — halte die KLICK-Taste (oder den 🎯-Button auf Mobilgeräten) zum Angreifen gedrückt — Waffen nutzen sich mit der Zeit ab, sammle Munition 📦 zum Nachladen — ESC für Pause",
     settings_title:"EINSTELLUNGEN", label_music_vol:"🔊 Musiklautstärke", label_sfx_vol:"🔉 Effektlautstärke",
-    label_mute:"🔇 Ton stumm schalten", label_shake:"📳 Bildschirm-Erschütterung", label_language:"🌐 Sprache", label_key_attack:"🖱️ Angriffstaste", label_key_kick:"🦵 Trittaste", keybind_listening:"Drücke eine Taste…", keybind_reserved:"Diese Taste ist für Bewegung/Pause reserviert", keybind_conflict:"Diese Taste wird bereits für die andere Aktion verwendet",
+    label_mute:"🔇 Ton stumm schalten", label_shake:"📳 Bildschirm-Erschütterung", label_aim_mouse:"🎯 Mit der Maus zielen", label_language:"🌐 Sprache", label_key_attack:"🖱️ Angriffstaste", label_key_kick:"🦵 Trittaste", keybind_listening:"Drücke eine Taste…", keybind_reserved:"Diese Taste ist für Bewegung/Pause reserviert", keybind_conflict:"Diese Taste wird bereits für die andere Aktion verwendet",
     btn_back:"ZURÜCK",
     trophy_title:"🏆 TROPHÄEN", codex_title:"📖 LEGENDE", codex_tab_weapons:"Waffen", codex_tab_enemies:"Gegner", codex_tab_bosses:"Bosse",
     codex_stat_dmg:"SCHADEN", codex_stat_cd:"Abklingzeit", codex_stat_hp:"LP", codex_stat_spd:"Tempo", codex_stat_dps:"SCHADEN",
@@ -1222,7 +1227,7 @@ const I18N_UI_IT_FALLBACK={
   btn_play:"🎮 GIOCA", btn_settings:"⚙️ IMPOSTAZIONI", btn_trophies:"🏆 TROFEI", btn_codex:"📖 LEGENDA",
   hint_start:"Muoviti con WASD / Frecce — tieni premuto il CLICK (o il pulsante 🎯 su mobile) per attaccare — le armi si consumano con l'uso, raccogli munizioni 📦 per ricaricarle — ESC per la pausa",
   settings_title:"IMPOSTAZIONI", label_music_vol:"🔊 Volume Musica", label_sfx_vol:"🔉 Volume Effetti",
-  label_mute:"🔇 Disattiva Audio", label_shake:"📳 Vibrazione Schermo", label_language:"🌐 Lingua", label_key_attack:"🖱️ Tasto Attacco", label_key_kick:"🦵 Tasto Calcio", keybind_listening:"Premi un tasto…", keybind_reserved:"Quel tasto è riservato al movimento/pausa", keybind_conflict:"Quel tasto è già usato per l'altra azione",
+  label_mute:"🔇 Disattiva Audio", label_shake:"📳 Vibrazione Schermo", label_aim_mouse:"🎯 Mira con il Mouse", label_language:"🌐 Lingua", label_key_attack:"🖱️ Tasto Attacco", label_key_kick:"🦵 Tasto Calcio", keybind_listening:"Premi un tasto…", keybind_reserved:"Quel tasto è riservato al movimento/pausa", keybind_conflict:"Quel tasto è già usato per l'altra azione",
   btn_back:"INDIETRO",
   trophy_title:"🏆 TROFEI", codex_title:"📖 LEGENDA", codex_tab_weapons:"Armi", codex_tab_enemies:"Nemici", codex_tab_bosses:"Boss",
   codex_stat_dmg:"DANNO", codex_stat_cd:"Ricarica", codex_stat_hp:"VITA", codex_stat_spd:"Velocità", codex_stat_dps:"DANNO",
@@ -1288,6 +1293,7 @@ function applyStaticTranslations(){
   setText('txt_label_sfx_vol','label_sfx_vol');
   setText('txt_label_mute','label_mute');
   setText('txt_label_shake','label_shake');
+  setText('txt_label_aim_mouse','label_aim_mouse');
   setText('txt_label_language','label_language');
   setText('txt_label_key_attack','label_key_attack');
   setText('txt_label_key_kick','label_key_kick');
@@ -2342,6 +2348,9 @@ function fireWeapon(wd,w){
 
 function targetAngle(){
   const p=game.player;
+  if(AudioSys.settings.aimMode==='mouse' && input.mouseWorldX!==undefined){
+    return angleTo(p.x,p.y,input.mouseWorldX,input.mouseWorldY);
+  }
   const t=nearestEnemy(p.x,p.y,900);
   if(t) return angleTo(p.x,p.y,t.x,t.y);
   if(input.mouseWorldX!==undefined) return angleTo(p.x,p.y,input.mouseWorldX,input.mouseWorldY);
@@ -2393,8 +2402,13 @@ function tryEmergencyKick(){
 function doProjectile(wd,dmg,w){
   const p=game.player;
   const count=effCount(wd,w.level);
-  const target=nearestEnemy(p.x,p.y,1200);
-  const baseAng = target? angleTo(p.x,p.y,target.x,target.y) : p.facing;
+  let baseAng;
+  if(AudioSys.settings.aimMode==='mouse' && input.mouseWorldX!==undefined){
+    baseAng=angleTo(p.x,p.y,input.mouseWorldX,input.mouseWorldY);
+  } else {
+    const target=nearestEnemy(p.x,p.y,1200);
+    baseAng = target? angleTo(p.x,p.y,target.x,target.y) : p.facing;
+  }
   for(let i=0;i<count;i++){
     const spread=(i-(count-1)/2)*0.18;
     spawnProjectile(p.x,p.y,baseAng+spread,wd,dmg);
@@ -2463,8 +2477,12 @@ function doAuraTick(wd,dmg,w){
   // so standing still or backing away doesn't make them whiff every enemy
   let aimAng=p.facing;
   if(wd.cone){
-    const t=nearestEnemy(p.x,p.y,radius);
-    if(t) aimAng=angleTo(p.x,p.y,t.x,t.y);
+    if(AudioSys.settings.aimMode==='mouse' && input.mouseWorldX!==undefined){
+      aimAng=angleTo(p.x,p.y,input.mouseWorldX,input.mouseWorldY);
+    } else {
+      const t=nearestEnemy(p.x,p.y,radius);
+      if(t) aimAng=angleTo(p.x,p.y,t.x,t.y);
+    }
   }
   for(const e of allTargets()){
     const d=dist(p.x,p.y,e.x,e.y);
@@ -3807,10 +3825,12 @@ const musicRange=document.getElementById('musicVolRange');
 const sfxRange=document.getElementById('sfxVolRange');
 const muteCheck=document.getElementById('muteCheck');
 const shakeCheck=document.getElementById('shakeCheck');
+const aimMouseCheck=document.getElementById('aimMouseCheck');
 musicRange.value=AudioSys.settings.musicVol;
 sfxRange.value=AudioSys.settings.sfxVol;
 muteCheck.checked=AudioSys.settings.muted;
 shakeCheck.checked=AudioSys.settings.shake;
+aimMouseCheck.checked=AudioSys.settings.aimMode==='mouse';
 document.getElementById('musicVolVal').textContent=AudioSys.settings.musicVol+'%';
 document.getElementById('sfxVolVal').textContent=AudioSys.settings.sfxVol+'%';
 updateMuteIcon();
@@ -3832,6 +3852,11 @@ muteCheck.onchange=()=>{
 shakeCheck.onchange=()=>{
   AudioSys.settings.shake=shakeCheck.checked;
   AudioSys.save();
+};
+aimMouseCheck.onchange=()=>{
+  AudioSys.settings.aimMode=aimMouseCheck.checked?'mouse':'auto';
+  AudioSys.save();
+  AudioSys.sfx.click();
 };
 document.getElementById('hudMuteBtn').onclick=()=>{
   AudioSys.ensureCtx();
