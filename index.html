@@ -737,7 +737,7 @@ const WEAPONS = {
   // ---------- ARMI INIZIALI PERSONAGGI ----------
   usb:{name:"Penna USB",icon:"💽",rarity:'common',archetype:'projectile',dmg:7,cd:520,count:1,speed:460,pierce:1,bounces:4},
   megaphone:{name:"Megafono",icon:"📢",rarity:'common',archetype:'aura',dmg:5,cd:380,radius:130,cone:150,knockback:300},
-  mop_boosted:{name:"Mocio Potenziato",icon:"🧽",rarity:'common',archetype:'aura',dmg:9,cd:320,radius:95,cone:130},
+  mop_boosted:{name:"Mocio Potenziato",icon:"🧽",rarity:'common',archetype:'orbit',dmg:10,cd:2200,count:2,orbitRadius:85,rotSpeed:6.5},
   briefcase:{name:"Valigetta del CEO",icon:"💼",rarity:'common',archetype:'projectile',dmg:14,cd:900,count:1,speed:380,pierce:1,explodeRadius:85},
 };
 // backfill defaults
@@ -1662,7 +1662,7 @@ const CHARACTERS = {
     name:"L'Addetto alle Pulizie", subtitle:"Sottovalutato e letale", color:'#f1c40f', portrait:'🧹',
     desc:"Nessuno lo nota. Nessuno sopravvive a lungo abbastanza per rimpiangerlo.",
     bars:{hp:6,spd:2,dmg:4,area:3}, mult:{hp:1.3,spd:0.85,dmg:1.1,area:0.95},
-    weapon:'mop_boosted', weaponName:'Mocio Potenziato', weaponDesc:"Colpisce i nemici in un'area davanti a te.", weaponIcon:'🧽',
+    weapon:'mop_boosted', weaponName:'Mocio Potenziato', weaponDesc:"Ruota attorno a te colpendo i nemici vicini.", weaponIcon:'🧽',
     passiveId:'pulizie', passiveName:'Resistenza Sporca', passiveIcon:'♻️', passiveDesc:"Rigenera l'1% di salute ogni secondo.",
   },
   manager:{
@@ -1679,7 +1679,7 @@ const I18N_CHAR = {
     assistente:{name:"The Assistant",subtitle:"Organized and Fast",desc:"Always on the move, supports the team with speed and precision.",weaponName:"Staple Gun",weaponDesc:"Fires bursts of staples.",passiveName:"Multitasking",passiveDesc:"Increases weapon reload speed by 5%."},
     informatico:{name:"The IT Guy",subtitle:"Tech Genius",desc:"A silent hacker who uses technology to dominate the chaos.",weaponName:"USB Stick",weaponDesc:"Throws viruses that bounce between enemies.",passiveName:"Backup",passiveDesc:"Creates a temporary shield every 30 seconds."},
     commerciale:{name:"The Salesman",subtitle:"Talks, Sells, Survives",desc:"Charismatic and ruthless, turns every object into an opportunity.",weaponName:"Megaphone",weaponDesc:"Sound wave that pushes back enemies.",passiveName:"Words That Strike",passiveDesc:"Critical hits have a 10% higher chance to stun."},
-    pulizie:{name:"The Janitor",subtitle:"Underestimated and Lethal",desc:"Nobody notices him. Nobody survives long enough to regret it.",weaponName:"Boosted Mop",weaponDesc:"Hits enemies in an area in front of you.",passiveName:"Grime Resistance",passiveDesc:"Regenerates 1% health every second."},
+    pulizie:{name:"The Janitor",subtitle:"Underestimated and Lethal",desc:"Nobody notices him. Nobody survives long enough to regret it.",weaponName:"Boosted Mop",weaponDesc:"Spins around you, striking nearby enemies.",passiveName:"Grime Resistance",passiveDesc:"Regenerates 1% health every second."},
     manager:{name:"The Manager",subtitle:"Born to Lead",desc:"Commands, delegates and uses every resource... including you as a last resort.",weaponName:"CEO's Briefcase",weaponDesc:"Throws explosive documents.",passiveName:"Deadly Delegation",passiveDesc:"Summons an attacking assistant every 20 seconds."},
   },
   es:{
@@ -1687,7 +1687,7 @@ const I18N_CHAR = {
     assistente:{name:"La Asistente",subtitle:"Organizada y Rápida",desc:"Siempre en movimiento, apoya al equipo con velocidad y precisión.",weaponName:"Grapadora",weaponDesc:"Dispara ráfagas de grapas.",passiveName:"Multitarea",passiveDesc:"Aumenta un 5% la velocidad de recarga de las armas."},
     informatico:{name:"El Informático",subtitle:"Genio de la Tecnología",desc:"Un hacker silencioso que usa la tecnología para dominar el caos.",weaponName:"Memoria USB",weaponDesc:"Lanza virus que rebotan entre los enemigos.",passiveName:"Copia de Seguridad",passiveDesc:"Cada 30 segundos crea un escudo temporal."},
     commerciale:{name:"El Comercial",subtitle:"Habla, Vende, Sobrevive",desc:"Carismático y despiadado, convierte cada objeto en una oportunidad.",weaponName:"Megáfono",weaponDesc:"Onda sonora que repele a los enemigos.",passiveName:"Palabras que Golpean",passiveDesc:"Los críticos tienen un 10% más de probabilidad de aturdir."},
-    pulizie:{name:"El Conserje",subtitle:"Subestimado y Letal",desc:"Nadie lo nota. Nadie sobrevive el tiempo suficiente para lamentarlo.",weaponName:"Fregona Potenciada",weaponDesc:"Golpea a los enemigos en un área frente a ti.",passiveName:"Resistencia a la Suciedad",passiveDesc:"Regenera el 1% de la vida cada segundo."},
+    pulizie:{name:"El Conserje",subtitle:"Subestimado y Letal",desc:"Nadie lo nota. Nadie sobrevive el tiempo suficiente para lamentarlo.",weaponName:"Fregona Potenciada",weaponDesc:"Gira a tu alrededor golpeando a los enemigos cercanos.",passiveName:"Resistencia a la Suciedad",passiveDesc:"Regenera el 1% de la vida cada segundo."},
     manager:{name:"El Gerente",subtitle:"Nacido para Mandar",desc:"Manda, delega y usa todos los recursos... incluyéndote a ti como último recurso.",weaponName:"Maletín del CEO",weaponDesc:"Lanza documentos explosivos.",passiveName:"Delegación Mortal",passiveDesc:"Invoca a un asistente atacante cada 20 segundos."},
   },
   fr:{
@@ -1695,7 +1695,7 @@ const I18N_CHAR = {
     assistente:{name:"L'Assistante",subtitle:"Organisée et Rapide",desc:"Toujours en mouvement, elle soutient l'équipe avec rapidité et précision.",weaponName:"Agrafeuse",weaponDesc:"Tire des rafales d'agrafes.",passiveName:"Multitâche",passiveDesc:"Augmente de 5% la vitesse de rechargement des armes."},
     informatico:{name:"L'Informaticien",subtitle:"Génie de la Technologie",desc:"Un hacker silencieux qui utilise la technologie pour dominer le chaos.",weaponName:"Clé USB",weaponDesc:"Lance des virus qui rebondissent entre les ennemis.",passiveName:"Sauvegarde",passiveDesc:"Crée un bouclier temporaire toutes les 30 secondes."},
     commerciale:{name:"Le Commercial",subtitle:"Parle, Vend, Survit",desc:"Charismatique et sans pitié, il transforme chaque objet en opportunité.",weaponName:"Mégaphone",weaponDesc:"Onde sonore qui repousse les ennemis.",passiveName:"Mots qui Frappent",passiveDesc:"Les coups critiques ont 10% de chances en plus d'étourdir."},
-    pulizie:{name:"L'Agent d'Entretien",subtitle:"Sous-estimé et Létal",desc:"Personne ne le remarque. Personne ne survit assez longtemps pour le regretter.",weaponName:"Serpillière Améliorée",weaponDesc:"Frappe les ennemis dans une zone devant toi.",passiveName:"Résistance à la Saleté",passiveDesc:"Régénère 1% de vie chaque seconde."},
+    pulizie:{name:"L'Agent d'Entretien",subtitle:"Sous-estimé et Létal",desc:"Personne ne le remarque. Personne ne survit assez longtemps pour le regretter.",weaponName:"Serpillière Améliorée",weaponDesc:"Tourne autour de toi et frappe les ennemis proches.",passiveName:"Résistance à la Saleté",passiveDesc:"Régénère 1% de vie chaque seconde."},
     manager:{name:"Le Manager",subtitle:"Né pour Diriger",desc:"Commande, délègue et utilise toutes les ressources... y compris toi en dernier recours.",weaponName:"Mallette du PDG",weaponDesc:"Lance des documents explosifs.",passiveName:"Délégation Mortelle",passiveDesc:"Invoque un assistant attaquant toutes les 20 secondes."},
   },
   de:{
@@ -1703,7 +1703,7 @@ const I18N_CHAR = {
     assistente:{name:"Die Assistentin",subtitle:"Organisiert und Schnell",desc:"Immer in Bewegung, unterstützt das Team mit Geschwindigkeit und Präzision.",weaponName:"Heftpistole",weaponDesc:"Schießt Salven von Heftklammern.",passiveName:"Multitasking",passiveDesc:"Erhöht die Nachladegeschwindigkeit der Waffen um 5%."},
     informatico:{name:"Der IT-Experte",subtitle:"Technik-Genie",desc:"Ein stiller Hacker, der Technologie nutzt, um das Chaos zu beherrschen.",weaponName:"USB-Stick",weaponDesc:"Wirft Viren, die zwischen Gegnern abprallen.",passiveName:"Backup",passiveDesc:"Erzeugt alle 30 Sekunden ein temporäres Schild."},
     commerciale:{name:"Der Vertriebler",subtitle:"Redet, Verkauft, Überlebt",desc:"Charismatisch und rücksichtslos, verwandelt jedes Objekt in eine Gelegenheit.",weaponName:"Megafon",weaponDesc:"Schallwelle, die Gegner zurückstößt.",passiveName:"Worte, die Treffen",passiveDesc:"Kritische Treffer haben 10% höhere Chance zu betäuben."},
-    pulizie:{name:"Der Hausmeister",subtitle:"Unterschätzt und Tödlich",desc:"Niemand bemerkt ihn. Niemand überlebt lange genug, um es zu bereuen.",weaponName:"Verstärkter Mopp",weaponDesc:"Trifft Gegner in einem Bereich vor dir.",passiveName:"Schmutzresistenz",passiveDesc:"Regeneriert jede Sekunde 1% Gesundheit."},
+    pulizie:{name:"Der Hausmeister",subtitle:"Unterschätzt und Tödlich",desc:"Niemand bemerkt ihn. Niemand überlebt lange genug, um es zu bereuen.",weaponName:"Verstärkter Mopp",weaponDesc:"Dreht sich um dich und trifft nahe Gegner.",passiveName:"Schmutzresistenz",passiveDesc:"Regeneriert jede Sekunde 1% Gesundheit."},
     manager:{name:"Der Manager",subtitle:"Geboren zum Führen",desc:"Befiehlt, delegiert und nutzt jede Ressource... dich eingeschlossen, als letztes Mittel.",weaponName:"Aktenkoffer des CEO",weaponDesc:"Wirft explosive Dokumente.",passiveName:"Tödliche Delegation",passiveDesc:"Beschwört alle 20 Sekunden einen angreifenden Assistenten."},
   },
 };
@@ -3539,6 +3539,12 @@ function updateWaveCountdown(dt){
   const frac=game.waveCooldown/WAVE_COOLDOWN_TOTAL;
   document.getElementById('wcProgressCircle').style.strokeDashoffset=(WAVE_COOLDOWN_CIRC*(1-frac))+'';
   document.getElementById('waveCountdownNum').textContent=Math.ceil(game.waveCooldown);
+  if(game.waveCooldown<=0){
+    wrap.classList.add('hidden');
+    // spawnTimer sat frozen through the whole boss fight + recovery, so it's stale and
+    // would otherwise dump a full batch on the player the instant spawning resumes
+    game.spawnTimer=rand(1.6,2.6);
+  }
 }
 
 /* ---------------------------- Game loop ---------------------------- */
