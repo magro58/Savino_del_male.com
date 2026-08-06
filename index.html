@@ -1876,7 +1876,7 @@ function initGame(charId){
     player, time:0, wave:1, kills:0,
     enemies:[], projectiles:[], enemyProjectiles:[], pickups:[], particles:[], floaters:[], clones:[],
     spawnTimer:0, gadgetTimer:rand(6,9), weaponSpawnTimer:rand(4,7),
-    boss:null, nextBossLevel:LEVELS_PER_STAGE, bossIndex:0, victory:false, waveCooldown:0,
+    boss:null, nextBossLevel:LEVELS_PER_STAGE, bossIndex:0, victory:false, waveCooldown:0, spawnEaseUntil:0,
     camX:player.x, camY:player.y,
     screenShake:0,
     over:false,
@@ -1999,7 +1999,11 @@ function updateSpawning(dt){
   const spawnCfg=difficultyCfg();
   const maxAlive=Math.min(220, (40+pr*0.75+kb*0.85)*spawnCfg.spawnMult);
   if(game.spawnTimer<=0 && game.enemies.length<maxAlive){
-    const batch=1+Math.floor((pr+kb)/26);
+    // right after a boss fight the field is empty, so a full batch would dump a
+    // whole clump of enemies on the player at once; trickle them in one at a time
+    // for a while instead of jumping straight back to mid/late-game batch sizes
+    const easingIn = game.time<game.spawnEaseUntil;
+    const batch = easingIn ? 1 : 1+Math.floor((pr+kb)/26);
     for(let i=0;i<batch;i++){
       const pos=randEdgePos();
       // variant specials rarer
@@ -2008,7 +2012,11 @@ function updateSpawning(dt){
       const t = useSpecial? pick(specials) : pick(ENEMY_IDS.filter(id=>!specials.includes(id)));
       spawnEnemy(t,pos.x,pos.y);
     }
-    game.spawnTimer = Math.max(0.16, (0.95-(pr+kb)/220)/spawnCfg.spawnMult);
+    // during the ease-in window also floor the tick rate itself — at high progress
+    // the normal minimum (0.16s) still reconstitutes a whole crowd in a few seconds
+    // even one at a time, which is exactly the "arrive all together" feeling
+    const minInterval = easingIn ? 0.75 : 0.16;
+    game.spawnTimer = Math.max(minInterval, (0.95-(pr+kb)/220)/spawnCfg.spawnMult);
   }
   // gadget pickups periodically
   game.gadgetTimer-=dt;
@@ -3562,6 +3570,7 @@ function updateWaveCountdown(dt){
     // spawnTimer sat frozen through the whole boss fight + recovery, so it's stale and
     // would otherwise dump a full batch on the player the instant spawning resumes
     game.spawnTimer=rand(1.6,2.6);
+    game.spawnEaseUntil=game.time+14; // trickle enemies in one at a time for a while after
   }
 }
 
